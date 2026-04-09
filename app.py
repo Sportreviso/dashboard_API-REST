@@ -13,7 +13,24 @@ def data():
  r=requests.get(URL).json().get('feeds',[]);x=[];y=[]
  for f in r:
   if f.get(FIELD_UMIDADE): x.append(f['created_at']);y.append(float(f[FIELD_UMIDADE]))
- g={'data':[{'x':x,'y':y,'type':'scatter','mode':'lines+markers'}],'layout':{'title':'Umidade do Ar (%)'}}
- return jsonify([json.dumps(g)])
+g = {
+    'data': [{
+        'x': x,
+        'y': y,
+        'type': 'scatter',
+        'mode': 'lines+markers',
+        'name': 'Umidade do Solo'
+    }],
+    'layout': {
+        'title': 'Umidade do Solo (%)',
+        'xaxis': {
+            'title': 'Tempo'
+        },
+        'yaxis': {
+            'title': 'Umidade (%)',
+            'range': [0, 100]
+        }
+    }
+}
 if __name__=='__main__':
  port=int(os.environ.get('PORT',5000));app.run(host='0.0.0.0',port=port)
