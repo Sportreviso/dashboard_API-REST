@@ -4,7 +4,7 @@ import requests, json, os
 app = Flask(__name__)
 CHANNEL_ID='3272763'
 API_KEY='5IIMKO2XDCJ9GT67'
-FIELD_UMIDADE='field2'
+FIELD_UMIDADE='field1'
 URL=f'https://api.thingspeak.com/channels/{CHANNEL_ID}/feeds.json?api_key={API_KEY}&results=200'
 @app.route('/')
 def index(): return render_template('dashboard.html')
