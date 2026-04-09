@@ -1,0 +1,1 @@
+<!DOCTYPE html><html><head><script src='https://cdn.plot.ly/plotly-latest.min.js'></script></head><body><h2>Umidade</h2><div id='grafico'></div><script>fetch('/data').then(r=>r.json()).then(d=>{const g=JSON.parse(d[0]);Plotly.newPlot('grafico',g.data,g.layout);});</script></body></html>
