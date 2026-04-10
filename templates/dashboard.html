@@ -2,35 +2,98 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard – Umidade do Solo</title>
+    <title>Dashboard Umidade do Solo</title>
 
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 30px;
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #000000;
+            --card-color: #f4f4f4;
         }
+
+        body.dark {
+            --bg-color: #121212;
+            --text-color: #ffffff;
+            --card-color: #1e1e1e;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            margin: 5px 0;
+        }
+
+        .header h3 {
+            margin: 2px 0;
+            font-weight: normal;
+            font-size: 14px;
+        }
+
+        .controls {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+
         #mensagem {
             color: gray;
             font-style: italic;
+            text-align: center;
             margin-bottom: 10px;
+        }
+
+        .card {
+            background-color: var(--card-color);
+            padding: 15px;
+            border-radius: 8px;
         }
     </style>
 </head>
 
 <body>
-    <h2>Umidade</h2>
+    <!-- CABEÇALHO -->
+    <div class="header">
+        <h1>DASHBOARD UMIDADE DO SOLO</h1>
+        <h3><strong>TÍTULO:</strong> Coleta e Processamento de Dados na Automação de Irrigação de Área com Erosão</h3>
+        <h3><strong>TURMA:</strong> DRP14-PJI510-A2026S1N1</h3>
+        <h3><strong>GRUPO:</strong> 15 – UNIVESP 2026</h3>
+    </div>
 
-    <!-- Mensagem exibida quando não há dados -->
-    <p id="mensagem">
-        Aguardando dados do sensor…
-    </p>
+    <!-- CONTROLES -->
+    <div class="controls">
+        <button onclick="alternarTema()">Alternar Tema Claro/Escuro</button>
+    </div>
 
-    <!-- Gráfico -->
-    <div id="grafico"></div>
+    <!-- MENSAGEM SEM DADOS -->
+    <p id="mensagem">Aguardando dados do sensor…</p>
+
+    <!-- GRÁFICO -->
+    <div class="card">
+        <div id="grafico"></div>
+    </div>
 
     <script>
+        function alternarTema() {
+            document.body.classList.toggle("dark");
+        }
+
         function carregarDados() {
             fetch('/data')
                 .then(r => r.json())
@@ -38,12 +101,17 @@
                     const grafico = JSON.parse(d[0]);
                     const mensagem = document.getElementById("mensagem");
 
-                    // Verifica se existem dados
+                    // Verifica se há dados
                     if (grafico.data[0].x.length > 0) {
                         mensagem.style.display = "none";
                     } else {
                         mensagem.style.display = "block";
                     }
+
+                    // Cor vermelha automática para valores negativos
+                    grafico.data[0].marker = {
+                        color: grafico.data[0].y.map(v => v < 0 ? 'red' : 'green')
+                    };
 
                     Plotly.newPlot('grafico', grafico.data, grafico.layout);
                 })
@@ -52,11 +120,12 @@
                 });
         }
 
-        // Carrega ao abrir a página
+        // Primeira carga
         carregarDados();
 
-        // Atualiza automaticamente a cada 10 segundos
+        // Atualização automática a cada 10 segundos
         setInterval(carregarDados, 10000);
     </script>
 </body>
 </html>
+``
