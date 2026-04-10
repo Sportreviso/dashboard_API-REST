@@ -1,1 +1,54 @@
-<!DOCTYPE html><html><head><script src='https://cdn.plot.ly/plotly-latest.min.js'></script></head><body><h2>Umidade</h2><div id='grafico'></div><script>fetch('/data').then(r=>r.json()).then(d=>{const g=JSON.parse(d[0]);Plotly.newPlot('grafico',g.data,g.layout);});</script></body></html>
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard – Umidade do Solo</title>
+
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 30px;
+        }
+        #mensagem {
+            color: gray;
+            font-style: italic;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>Umidade</h2>
+
+    <!-- Mensagem exibida quando não há dados -->
+    <p id="mensagem">
+        Aguardando dados do sensor…
+    </p>
+
+    <!-- Gráfico -->
+    <div id="grafico"></div>
+
+    <script>
+        fetch('/data')
+            .then(r => r.json())
+            .then(d => {
+                const grafico = JSON.parse(d[0]);
+                const mensagem = document.getElementById("mensagem");
+
+                // Verifica se existem dados
+                if (grafico.data[0].x.length > 0) {
+                    mensagem.style.display = "none";
+                } else {
+                    mensagem.style.display = "block";
+                }
+
+                Plotly.newPlot('grafico', grafico.data, grafico.layout);
+            })
+            .catch(() => {
+                document.getElementById("mensagem").style.display = "block";
+            });
+    </script>
+</body>
+</html>
