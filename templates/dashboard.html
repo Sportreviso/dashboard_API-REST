@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <title>Dashboard Umidade do Solo</title>
 
-    https://cdn.plot.ly/plotly-latest.min.jsscript>
+    <!-- ✅ IMPORTAÇÃO CORRETA DO PLOTLY -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
     <style>
         :root {
@@ -114,7 +115,7 @@
             Média<br><strong id="media">-- %</strong>
         </div>
         <div class="indicator">
-            Status<br><strong id="status">Aguardando</strong>
+            Status<br><strong id="status">SEM DADOS</strong>
         </div>
     </div>
 
@@ -134,6 +135,7 @@
         }
 
         function exportarCSV() {
+            if (dadosCSV.length === 0) return;
             let csv = "Tempo,Umidade (%)\n";
             dadosCSV.forEach(l => csv += `${l.x},${l.y}\n`);
             const blob = new Blob([csv], { type: 'text/csv' });
@@ -151,37 +153,73 @@
             fetch('/data')
                 .then(r => r.json())
                 .then(d => {
-                    const grafico = JSON.parse(d[0]);
-                    const x = grafico.data[0].x;
-                    const y = grafico.data[0].y;
+                    const payload = JSON.parse(d[0]);
+                    const x = payload.data[0].x;
+                    const y = payload.data[0].y;
 
                     dadosCSV = x.map((v, i) => ({ x: v, y: y[i] }));
 
-                    const mensagem = document.getElementById("mensagem");
+                    let trace;
 
                     if (y.length > 0) {
-                        mensagem.style.display = "none";
+                        // ✅ DADOS REAIS
+                        trace = {
+                            x: x,
+                            y: y,
+                            type: "scatter",
+                            mode: "lines+markers",
+                            name: "Umidade do Solo",
+                            line: { width: 3, color: "green" },
+                            marker: {
+                                size: 6,
+                                color: y.map(v => v < 0 ? "red" : "green")
+                            }
+                        };
+
+                        document.getElementById("mensagem").style.display = "none";
                         document.getElementById("status").innerText = "ONLINE";
-                        document.getElementById("ultimo").innerText = y[y.length - 1].toFixed(1) + " %";
-                        document.getElementById("media").innerText = calcularMedia(y).toFixed(1) + " %";
+                        document.getElementById("ultimo").innerText =
+                            y[y.length - 1].toFixed(1) + " %";
+                        document.getElementById("media").innerText =
+                            calcularMedia(y).toFixed(1) + " %";
+
                     } else {
-                        mensagem.style.display = "block";
+                        // ✅ LINHA VISUAL QUANDO NÃO HÁ DADOS
+                        trace = {
+                            x: [0, 1],
+                            y: [0, 0],
+                            type: "scatter",
+                            mode: "lines",
+                            name: "Aguardando dados",
+                            line: {
+                                width: 2,
+                                dash: "dot",
+                                color: "#6a9e6a"
+                            }
+                        };
+
+                        document.getElementById("mensagem").style.display = "block";
                         document.getElementById("status").innerText = "SEM DADOS";
                         document.getElementById("ultimo").innerText = "-- %";
                         document.getElementById("media").innerText = "-- %";
                     }
 
-                    grafico.data[0].line = { width: 3 };
-                    grafico.data[0].marker = {
-                        size: 6,
-                        color: y.map(v => v < 0 ? 'red' : 'green')
+                    const layout = {
+                        title: "Umidade do Solo (%)",
+                        xaxis: {
+                            title: "Tempo",
+                            visible: y.length > 0
+                        },
+                        yaxis: {
+                            title: "Umidade (%)",
+                            range: [0, 100]
+                        },
+                        plot_bgcolor: "#d6f2d6",
+                        paper_bgcolor: "transparent",
+                        font: { size: 14 }
                     };
 
-                    grafico.layout.plot_bgcolor = "#d6f2d6";
-                    grafico.layout.paper_bgcolor = "transparent";
-                    grafico.layout.font = { size: 14 };
-
-                    Plotly.newPlot("grafico", grafico.data, grafico.layout);
+                    Plotly.newPlot("grafico", [trace], layout);
                 });
         }
 
