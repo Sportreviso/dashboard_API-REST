@@ -4,19 +4,19 @@
     <meta charset="UTF-8">
     <title>Dashboard Umidade do Solo</title>
 
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    https://cdn.plot.ly/plotly-latest.min.jsscript>
 
     <style>
         :root {
             --bg-color: #ffffff;
             --text-color: #000000;
-            --card-color: #f4f4f4;
+            --card-color: #eaf5ea;
         }
 
         body.dark {
             --bg-color: #121212;
             --text-color: #ffffff;
-            --card-color: #1e1e1e;
+            --card-color: #1e2a1e;
         }
 
         body {
@@ -33,7 +33,7 @@
         }
 
         .header h1 {
-            margin: 5px 0;
+            margin-bottom: 5px;
         }
 
         .header h3 {
@@ -44,25 +44,48 @@
 
         .controls {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         button {
             padding: 8px 12px;
+            margin: 4px;
             cursor: pointer;
+            font-size: 14px;
+        }
+
+        .indicators {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .indicator {
+            background-color: var(--card-color);
+            padding: 10px 15px;
+            border-radius: 8px;
+            min-width: 150px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .indicator strong {
+            font-size: 18px;
         }
 
         #mensagem {
+            text-align: center;
             color: gray;
             font-style: italic;
-            text-align: center;
             margin-bottom: 10px;
         }
 
-        .card {
+        .chart-card {
             background-color: var(--card-color);
             padding: 15px;
-            border-radius: 8px;
+            border-radius: 10px;
         }
     </style>
 </head>
@@ -78,20 +101,50 @@
 
     <!-- CONTROLES -->
     <div class="controls">
-        <button onclick="alternarTema()">Alternar Tema Claro/Escuro</button>
+        <button onclick="alternarTema()">Tema Claro / Escuro</button>
+        <button onclick="exportarCSV()">Exportar CSV</button>
     </div>
 
-    <!-- MENSAGEM SEM DADOS -->
+    <!-- INDICADORES -->
+    <div class="indicators">
+        <div class="indicator">
+            Último valor<br><strong id="ultimo">-- %</strong>
+        </div>
+        <div class="indicator">
+            Média<br><strong id="media">-- %</strong>
+        </div>
+        <div class="indicator">
+            Status<br><strong id="status">Aguardando</strong>
+        </div>
+    </div>
+
+    <!-- MENSAGEM -->
     <p id="mensagem">Aguardando dados do sensor…</p>
 
     <!-- GRÁFICO -->
-    <div class="card">
+    <div class="chart-card">
         <div id="grafico"></div>
     </div>
 
     <script>
+        let dadosCSV = [];
+
         function alternarTema() {
             document.body.classList.toggle("dark");
+        }
+
+        function exportarCSV() {
+            let csv = "Tempo,Umidade (%)\n";
+            dadosCSV.forEach(l => csv += `${l.x},${l.y}\n`);
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = "umidade_solo.csv";
+            a.click();
+        }
+
+        function calcularMedia(valores) {
+            return valores.reduce((a, b) => a + b, 0) / valores.length;
         }
 
         function carregarDados() {
@@ -99,33 +152,41 @@
                 .then(r => r.json())
                 .then(d => {
                     const grafico = JSON.parse(d[0]);
+                    const x = grafico.data[0].x;
+                    const y = grafico.data[0].y;
+
+                    dadosCSV = x.map((v, i) => ({ x: v, y: y[i] }));
+
                     const mensagem = document.getElementById("mensagem");
 
-                    // Verifica se há dados
-                    if (grafico.data[0].x.length > 0) {
+                    if (y.length > 0) {
                         mensagem.style.display = "none";
+                        document.getElementById("status").innerText = "ONLINE";
+                        document.getElementById("ultimo").innerText = y[y.length - 1].toFixed(1) + " %";
+                        document.getElementById("media").innerText = calcularMedia(y).toFixed(1) + " %";
                     } else {
                         mensagem.style.display = "block";
+                        document.getElementById("status").innerText = "SEM DADOS";
+                        document.getElementById("ultimo").innerText = "-- %";
+                        document.getElementById("media").innerText = "-- %";
                     }
 
-                    // Cor vermelha automática para valores negativos
+                    grafico.data[0].line = { width: 3 };
                     grafico.data[0].marker = {
-                        color: grafico.data[0].y.map(v => v < 0 ? 'red' : 'green')
+                        size: 6,
+                        color: y.map(v => v < 0 ? 'red' : 'green')
                     };
 
-                    Plotly.newPlot('grafico', grafico.data, grafico.layout);
-                })
-                .catch(() => {
-                    document.getElementById("mensagem").style.display = "block";
+                    grafico.layout.plot_bgcolor = "#d6f2d6";
+                    grafico.layout.paper_bgcolor = "transparent";
+                    grafico.layout.font = { size: 14 };
+
+                    Plotly.newPlot("grafico", grafico.data, grafico.layout);
                 });
         }
 
-        // Primeira carga
         carregarDados();
-
-        // Atualização automática a cada 10 segundos
         setInterval(carregarDados, 10000);
     </script>
 </body>
 </html>
-``
