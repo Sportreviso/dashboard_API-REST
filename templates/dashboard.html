@@ -31,24 +31,32 @@
     <div id="grafico"></div>
 
     <script>
-        fetch('/data')
-            .then(r => r.json())
-            .then(d => {
-                const grafico = JSON.parse(d[0]);
-                const mensagem = document.getElementById("mensagem");
+        function carregarDados() {
+            fetch('/data')
+                .then(r => r.json())
+                .then(d => {
+                    const grafico = JSON.parse(d[0]);
+                    const mensagem = document.getElementById("mensagem");
 
-                // Verifica se existem dados
-                if (grafico.data[0].x.length > 0) {
-                    mensagem.style.display = "none";
-                } else {
-                    mensagem.style.display = "block";
-                }
+                    // Verifica se existem dados
+                    if (grafico.data[0].x.length > 0) {
+                        mensagem.style.display = "none";
+                    } else {
+                        mensagem.style.display = "block";
+                    }
 
-                Plotly.newPlot('grafico', grafico.data, grafico.layout);
-            })
-            .catch(() => {
-                document.getElementById("mensagem").style.display = "block";
-            });
+                    Plotly.newPlot('grafico', grafico.data, grafico.layout);
+                })
+                .catch(() => {
+                    document.getElementById("mensagem").style.display = "block";
+                });
+        }
+
+        // Carrega ao abrir a página
+        carregarDados();
+
+        // Atualiza automaticamente a cada 10 segundos
+        setInterval(carregarDados, 10000);
     </script>
 </body>
 </html>
