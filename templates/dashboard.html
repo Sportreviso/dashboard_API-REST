@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <title>Dashboard Umidade do Solo</title>
 
-    <!-- Plotly (forma CORRETA, sem erro) -->
-    <script src="https://cdn.plot.ly/plotly-latestpt>
+    https://cdn.plot.ly/plotly-latest.min.jsscript>
 
     <style>
         :root {
@@ -67,7 +66,7 @@
             background-color: var(--card-color);
             padding: 10px 15px;
             border-radius: 8px;
-            min-width: 160px;
+            min-width: 150px;
             text-align: center;
             font-size: 14px;
         }
@@ -115,7 +114,7 @@
             Média<br><strong id="media">-- %</strong>
         </div>
         <div class="indicator">
-            Status<br><strong id="status">SEM DADOS</strong>
+            Status<br><strong id="status">Aguardando</strong>
         </div>
     </div>
 
@@ -135,18 +134,17 @@
         }
 
         function exportarCSV() {
-            if (dadosCSV.length === 0) return;
             let csv = "Tempo,Umidade (%)\n";
-            dadosCSV.forEach(l => csv += `${l.tempo},${l.valor}\n`);
+            dadosCSV.forEach(l => csv += `${l.x},${l.y}\n`);
             const blob = new Blob([csv], { type: 'text/csv' });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = "umidade_solo.csv";
-            link.click();
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = "umidade_solo.csv";
+            a.click();
         }
 
-        function calcularMedia(arr) {
-            return arr.reduce((a, b) => a + b, 0) / arr.length;
+        function calcularMedia(valores) {
+            return valores.reduce((a, b) => a + b, 0) / valores.length;
         }
 
         function carregarDados() {
@@ -157,15 +155,17 @@
                     const x = grafico.data[0].x;
                     const y = grafico.data[0].y;
 
-                    dadosCSV = x.map((v, i) => ({ tempo: v, valor: y[i] }));
+                    dadosCSV = x.map((v, i) => ({ x: v, y: y[i] }));
+
+                    const mensagem = document.getElementById("mensagem");
 
                     if (y.length > 0) {
-                        document.getElementById("mensagem").style.display = "none";
+                        mensagem.style.display = "none";
                         document.getElementById("status").innerText = "ONLINE";
                         document.getElementById("ultimo").innerText = y[y.length - 1].toFixed(1) + " %";
                         document.getElementById("media").innerText = calcularMedia(y).toFixed(1) + " %";
                     } else {
-                        document.getElementById("mensagem").style.display = "block";
+                        mensagem.style.display = "block";
                         document.getElementById("status").innerText = "SEM DADOS";
                         document.getElementById("ultimo").innerText = "-- %";
                         document.getElementById("media").innerText = "-- %";
@@ -182,9 +182,6 @@
                     grafico.layout.font = { size: 14 };
 
                     Plotly.newPlot("grafico", grafico.data, grafico.layout);
-                })
-                .catch(() => {
-                    document.getElementById("mensagem").style.display = "block";
                 });
         }
 
