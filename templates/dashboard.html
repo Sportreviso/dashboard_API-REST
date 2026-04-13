@@ -135,10 +135,11 @@
         }
 
        function exportarCSV() {
-    let csv = "Data,Último valor (%),Média (%),Umidade (%),Tempo\n";
+    // BOM para Excel reconhecer UTF-8 corretamente
+    let csv = "\uFEFFData;Último valor (%);Média (%);Umidade (%);Tempo\n";
 
     if (dadosCSV.length === 0) {
-        csv += "Sem dados,Sem dados,Sem dados,Sem dados,Sem dados\n";
+        csv += "Sem dados;Sem dados;Sem dados;Sem dados;Sem dados\n";
     } else {
         const ultimoValor = dadosCSV[dadosCSV.length - 1].y;
         const media =
@@ -146,14 +147,15 @@
             dadosCSV.length;
 
         dadosCSV.forEach(item => {
-            // Extrai a data (YYYY-MM-DD) do timestamp
             const data = item.x.split("T")[0];
-
-            csv += `${data},${ultimoValor.toFixed(1)},${media.toFixed(1)},${item.y.toFixed(1)},${item.x}\n`;
+            csv += `${data};${ultimoValor.toFixed(1)};${media.toFixed(1)};${item.y.toFixed(1)};${item.x}\n`;
         });
     }
 
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const blob = new Blob([csv], {
+        type: "text/csv;charset=utf-8;"
+    });
+
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
     link.download = "umidade_solo.csv";
