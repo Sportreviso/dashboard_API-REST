@@ -1,201 +1,176 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <title>Dashboard Umidade do Solo</title>
+<meta charset="UTF-8">
+<title>Dashboard Umidade do Solo</title>
 
-    <!-- Plotly -->
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
-    <style>
-        :root {
-            --bg-light: #ffffff;
-            --text-light: #000000;
-            --card-light: #edf7ed;
-            --plot-light: #dff3df;
+<style>
+body {
+    background:#ffffff;
+    color:#000;
+    font-family:Arial, sans-serif;
+    padding:20px;
+    transition:background .3s, color .3s;
+}
 
-            --bg-dark: #0f0f0f;
-            --text-dark: #ffffff;
-            --card-dark: #1f2d1f;
-            --plot-dark: #2e4a2e;
-        }
+body.dark {
+    background:#0f0f0f;
+    color:#fff;
+}
 
-        body {
-            background-color: var(--bg-light);
-            color: var(--text-light);
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            transition: background-color .35s ease, color .35s ease;
-        }
+.header{text-align:center;margin-bottom:20px;}
+.header h3{font-size:14px;font-weight:normal;margin:3px}
 
-        body.dark {
-            background-color: var(--bg-dark);
-            color: var(--text-dark);
-        }
+.controls{text-align:center;margin-bottom:15px}
 
-        .header { text-align: center; margin-bottom: 20px; }
+button{padding:8px 14px;cursor:pointer}
 
-        .header h3 {
-            font-size: 14px;
-            font-weight: normal;
-            margin: 3px 0;
-        }
+.indicators{
+    display:flex;
+    justify-content:center;
+    gap:15px;
+    margin-bottom:15px
+}
 
-        .controls { text-align: center; margin-bottom: 15px; }
+.indicator{
+    background:#edf7ed;
+    padding:10px 18px;
+    border-radius:8px;
+}
 
-        button {
-            padding: 8px 14px;
-            margin: 4px;
-            font-size: 14px;
-            cursor: pointer;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-        }
+body.dark .indicator{background:#1f2d1f}
 
-        .indicators {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-bottom: 15px;
-        }
+.chart-card{
+    background:#edf7ed;
+    padding:16px;
+    border-radius:12px;
+}
 
-        .indicator {
-            background-color: var(--card-light);
-            padding: 10px 18px;
-            border-radius: 8px;
-            min-width: 150px;
-            text-align: center;
-            transition: background-color .35s ease;
-        }
+body.dark .chart-card{background:#1f2d1f}
 
-        body.dark .indicator { background-color: var(--card-dark); }
-
-        .indicator strong { font-size: 18px; }
-
-        #mensagem {
-            text-align: center;
-            font-style: italic;
-            color: gray;
-            margin-bottom: 10px;
-        }
-
-        .chart-card {
-            background-color: var(--card-light);
-            padding: 16px;
-            border-radius: 12px;
-            transition: background-color .35s ease;
-        }
-
-        body.dark .chart-card { background-color: var(--card-dark); }
-    </style>
+#mensagem{
+    text-align:center;
+    color:gray;
+    font-style:italic;
+    margin-bottom:10px
+}
+</style>
 </head>
 
 <body>
-    <div class="header">
-        <h1>DASHBOARD UMIDADE DO SOLO</h1>
-        <h3><strong>TÍTULO:</strong> Coleta e Processamento de Dados na Automação de Irrigação de Área com Erosão</h3>
-        <h3><strong>TURMA:</strong> DRP14-PJI510-A2026S1N1</h3>
-        <h3><strong>GRUPO:</strong> 15 – UNIVESP 2026</h3>
-    </div>
 
-    <div class="controls">
-        <button onclick="alternarTema()">Tema Claro / Escuro</button>
-        <button onclick="exportarCSV()">Exportar CSV</button>
-    </div>
+<div class="header">
+<h1>DASHBOARD UMIDADE DO SOLO</h1>
+<h3><strong>TÍTULO:</strong> Coleta e Processamento de Dados na Automação de Irrigação de Área com Erosão</h3>
+<h3><strong>TURMA:</strong> DRP14-PJI510-A2026S1N1</h3>
+<h3><strong>GRUPO:</strong> 15 – UNIVESP 2026</h3>
+</div>
 
-    <div class="indicators">
-        <div class="indicator">Último valor<br><strong id="ultimo">-- %</strong></div>
-        <div class="indicator">Média<br><strong id="media">-- %</strong></div>
-        <div class="indicator">Status<br><strong id="status">SEM DADOS</strong></div>
-    </div>
+<div class="controls">
+<button onclick="alternarTema()">Tema Claro / Escuro</button>
+<button onclick="exportarCSV()">Exportar CSV</button>
+</div>
 
-    <p id="mensagem">Aguardando dados do sensor…</p>
+<div class="indicators">
+<div class="indicator">Último valor<br><strong id="ultimo">-- %</strong></div>
+<div class="indicator">Média<br><strong id="media">-- %</strong></div>
+<div class="indicator">Status<br><strong id="status">SEM DADOS</strong></div>
+</div>
 
-    <div class="chart-card">
-        <div id="grafico"></div>
-    </div>
+<p id="mensagem">Aguardando dados do sensor…</p>
 
-    <script>
-        let dadosCSV = [];
-        let layoutAtual = null;
+<div class="chart-card">
+<div id="grafico"></div>
+</div>
 
-        function alternarTema() {
-            document.body.classList.toggle("dark");
-            aplicarTemaGrafico();
-        }
+<script>
+let dadosCSV = [];
+let temaAtual = "claro";
+let dadosX = [];
+let dadosY = [];
 
-        function aplicarTemaGrafico() {
-            if (!layoutAtual) return;
+const CORES = {
+    claro:{
+        plot:"#dff3df",
+        grid:"#c0d9c0",
+        text:"#000"
+    },
+    escuro:{
+        plot:"#2e4a2e",
+        grid:"#6f8f6f",
+        text:"#fff"
+    }
+};
 
-            const escuro = document.body.classList.contains("dark");
+function alternarTema(){
+    temaAtual = temaAtual === "claro" ? "escuro" : "claro";
+    document.body.classList.toggle("dark");
+    atualizarLayout();
+}
 
-            Plotly.relayout("grafico", {
-                plot_bgcolor: escuro ? "var(--plot-dark)" : "var(--plot-light)",
-                "title.font.color": escuro ? "#fff" : "#000",
-                "xaxis.tickfont.color": escuro ? "#fff" : "#000",
-                "yaxis.tickfont.color": escuro ? "#fff" : "#000",
-                "xaxis.gridcolor": escuro ? "#6f8f6f" : "#c0d9c0",
-                "yaxis.gridcolor": escuro ? "#6f8f6f" : "#c0d9c0"
-            });
-        }
+function atualizarLayout(){
+    const c = CORES[temaAtual];
+    Plotly.relayout("grafico", {
+        plot_bgcolor: c.plot,
+        "xaxis.gridcolor": c.grid,
+        "yaxis.gridcolor": c.grid,
+        "xaxis.tickfont.color": c.text,
+        "yaxis.tickfont.color": c.text,
+        "title.font.color": c.text
+    });
+}
 
-        function exportarCSV() {
-            let csv = "\uFEFFData;Último valor (%);Média (%);Umidade (%);Tempo\n";
+function carregarDados(){
+    fetch("/data")
+    .then(r=>r.json())
+    .then(d=>{
+        const g = JSON.parse(d[0]);
+        dadosX = g.data[0].x;
+        dadosY = g.data[0].y;
+        atualizarGrafico();
+    });
+}
 
-            if (dadosCSV.length === 0) {
-                csv += "Sem dados;Sem dados;Sem dados;Sem dados;Sem dados\n";
-            } else {
-                const ultimo = dadosCSV.at(-1).y;
-                const media = dadosCSV.reduce((s, i) => s + i.y, 0) / dadosCSV.length;
+function atualizarGrafico(){
+    const c = CORES[temaAtual];
 
-                dadosCSV.forEach(i => {
-                    csv += `${i.x.split("T")[0]};${ultimo.toFixed(1)};${media.toFixed(1)};${i.y.toFixed(1)};${i.x}\n`;
-                });
-            }
+    const trace = dadosY.length ?
+        {x:dadosX,y:dadosY,mode:"lines+markers",line:{width:3}} :
+        {x:[0,1],y:[0,0],mode:"lines",line:{dash:"dot",width:2,color:"#6fa96f"}};
 
-            const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = "umidade_solo.csv";
-            link.click();
-        }
+    Plotly.react("grafico",[trace],{
+        title:{text:"Umidade do Solo (%)",font:{color:c.text}},
+        xaxis:{gridcolor:c.grid,visible:dadosY.length>0},
+        yaxis:{gridcolor:c.grid,range:[0,100]},
+        plot_bgcolor:c.plot,
+        paper_bgcolor:"transparent"
+    });
 
-        function carregarDados() {
-            fetch("/data")
-                .then(r => r.json())
-                .then(d => {
-                    const p = JSON.parse(d[0]);
-                    const x = p.data[0].x;
-                    const y = p.data[0].y;
+    if(dadosY.length){
+        document.getElementById("status").innerText="ONLINE";
+        document.getElementById("ultimo").innerText=dadosY.at(-1)+" %";
+        document.getElementById("media").innerText=
+            (dadosY.reduce((a,b)=>a+b,0)/dadosY.length).toFixed(1)+" %";
+        document.getElementById("mensagem").style.display="none";
+    }else{
+        document.getElementById("mensagem").style.display="block";
+    }
+}
 
-                    dadosCSV = x.map((v, i) => ({ x: v, y: y[i] }));
+function exportarCSV(){
+    let csv="\uFEFFData;Umidade\n";
+    dadosX.forEach((x,i)=>csv+=`${x};${dadosY[i]}\n`);
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(new Blob([csv]));
+    a.download="umidade.csv";
+    a.click();
+}
 
-                    const trace = y.length
-                        ? { x, y, type:"scatter", mode:"lines+markers", line:{width:3}, marker:{size:6} }
-                        : { x:[0,1], y:[0,0], type:"scatter", mode:"lines", line:{dash:"dot", width:2} };
+carregarDados();
+setInterval(carregarDados,10000);
+</script>
 
-                    document.getElementById("mensagem").style.display = y.length ? "none" : "block";
-                    document.getElementById("status").innerText = y.length ? "ONLINE" : "SEM DADOS";
-                    document.getElementById("ultimo").innerText = y.length ? y.at(-1).toFixed(1)+" %" : "-- %";
-                    document.getElementById("media").innerText = y.length ? (y.reduce((a,b)=>a+b,0)/y.length).toFixed(1)+" %" : "-- %";
-
-                    layoutAtual = {
-                        title:{text:"Umidade do Solo (%)", font:{size:18}},
-                        xaxis:{visible:y.length>0},
-                        yaxis:{range:[0,100]},
-                        plot_bgcolor: document.body.classList.contains("dark")
-                            ? "var(--plot-dark)" : "var(--plot-light)",
-                        paper_bgcolor:"transparent"
-                    };
-
-                    Plotly.react("grafico",[trace], layoutAtual, {responsive:true});
-                });
-        }
-
-        carregarDados();
-        setInterval(carregarDados, 10000);
-    </script>
 </body>
 </html>
-``
