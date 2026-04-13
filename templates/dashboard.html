@@ -4,22 +4,21 @@
     <meta charset="UTF-8">
     <title>Dashboard Umidade do Solo</title>
 
-    <!-- Plotly -->
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
     <style>
         :root {
+            /* Tema claro */
             --bg-color: #ffffff;
             --text-color: #000000;
-            --card-color: #eaf5ea;
-            --plot-light: #d6f2d6;
-            --plot-dark: #2f4f2f;
-        }
+            --card-color: #edf7ed;
+            --plot-bg: #dff3df;
 
-        body.dark {
-            --bg-color: #121212;
-            --text-color: #ffffff;
-            --card-color: #1e2a1e;
+            /* Tema escuro */
+            --bg-dark: #0f0f0f;
+            --text-dark: #ffffff;
+            --card-dark: #1f2d1f;
+            --plot-dark: #2e4a2e;
         }
 
         body {
@@ -28,19 +27,38 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 20px;
-            transition: background-color 0.4s ease, color 0.4s ease;
+            transition: background-color .35s ease, color .35s ease;
         }
 
-        .header { text-align: center; margin-bottom: 20px; }
-        .header h3 { margin: 2px 0; font-size: 14px; font-weight: normal; }
+        body.dark {
+            background-color: var(--bg-dark);
+            color: var(--text-dark);
+        }
 
-        .controls { text-align: center; margin-bottom: 15px; }
-        button {
-            padding: 8px 12px;
-            margin: 4px;
-            cursor: pointer;
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header h3 {
             font-size: 14px;
-            transition: background-color 0.3s ease, color 0.3s ease;
+            font-weight: normal;
+            margin: 3px 0;
+        }
+
+        .controls {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        button {
+            padding: 8px 14px;
+            margin: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            transition: background-color .25s ease;
         }
 
         .indicators {
@@ -52,27 +70,37 @@
 
         .indicator {
             background-color: var(--card-color);
-            padding: 10px 15px;
+            padding: 10px 18px;
             border-radius: 8px;
             min-width: 150px;
             text-align: center;
-            transition: background-color 0.4s ease, color 0.4s ease;
+            transition: background-color .35s ease;
         }
 
-        .indicator strong { font-size: 18px; }
+        body.dark .indicator {
+            background-color: var(--card-dark);
+        }
+
+        .indicator strong {
+            font-size: 18px;
+        }
 
         #mensagem {
             text-align: center;
-            color: gray;
             font-style: italic;
+            color: gray;
             margin-bottom: 10px;
         }
 
         .chart-card {
             background-color: var(--card-color);
-            padding: 15px;
-            border-radius: 10px;
-            transition: background-color 0.4s ease;
+            padding: 16px;
+            border-radius: 12px;
+            transition: background-color .35s ease;
+        }
+
+        body.dark .chart-card {
+            background-color: var(--card-dark);
         }
     </style>
 </head>
@@ -104,12 +132,14 @@
 
     <script>
         let dadosCSV = [];
-        let ultimoTrace = null;
-        let ultimoLayout = null;
+        let ultimoLayout;
 
         function alternarTema() {
             document.body.classList.toggle("dark");
+            aplicarTemaNoGrafico();
+        }
 
+        function aplicarTemaNoGrafico() {
             if (!ultimoLayout) return;
 
             const escuro = document.body.classList.contains("dark");
@@ -118,9 +148,9 @@
                 "title.font.color": escuro ? "#fff" : "#000",
                 "xaxis.tickfont.color": escuro ? "#fff" : "#000",
                 "yaxis.tickfont.color": escuro ? "#fff" : "#000",
-                "xaxis.gridcolor": escuro ? "#666" : "#ccc",
-                "yaxis.gridcolor": escuro ? "#666" : "#ccc",
-                "plot_bgcolor": escuro ? "var(--plot-dark)" : "var(--plot-light)"
+                "xaxis.gridcolor": escuro ? "#6f8f6f" : "#c0d9c0",
+                "yaxis.gridcolor": escuro ? "#6f8f6f" : "#c0d9c0",
+                "plot_bgcolor": escuro ? "var(--plot-dark)" : "var(--plot-bg)"
             });
         }
 
@@ -156,45 +186,31 @@
                     dadosCSV = x.map((v, i) => ({ x: v, y: y[i] }));
                     const escuro = document.body.classList.contains("dark");
 
-                    let trace;
-
-                    if (y.length > 0) {
-                        trace = {
-                            x, y,
-                            type: "scatter",
-                            mode: "lines+markers",
-                            line: { width: 3 },
-                            marker: { size: 6, color: y.map(v => v < 0 ? "red" : "green") }
-                        };
-                        document.getElementById("mensagem").style.display = "none";
-                        document.getElementById("status").innerText = "ONLINE";
-                        document.getElementById("ultimo").innerText = y.at(-1).toFixed(1) + " %";
-                        document.getElementById("media").innerText =
-                            (y.reduce((a,b)=>a+b,0)/y.length).toFixed(1) + " %";
-                    } else {
-                        trace = {
-                            x:[0,1], y:[0,0],
-                            type:"scatter", mode:"lines",
-                            line:{dash:"dot", width:2,color:"#6a9e6a"}
-                        };
-                        document.getElementById("mensagem").style.display="block";
-                        document.getElementById("status").innerText="SEM DADOS";
-                        document.getElementById("ultimo").innerText="-- %";
-                        document.getElementById("media").innerText="-- %";
-                    }
-
-                    const layout = {
-                        title:{ text:"Umidade do Solo (%)", font:{color: escuro?"#fff":"#000", size:18}},
-                        xaxis:{ title:"Tempo", visible:y.length>0, tickfont:{color:escuro?"#fff":"#000"}, gridcolor:escuro?"#666":"#ccc"},
-                        yaxis:{ title:"Umidade (%)", range:[0,100], tickfont:{color:escuro?"#fff":"#000"}, gridcolor:escuro?"#666":"#ccc"},
-                        plot_bgcolor: escuro ? "var(--plot-dark)" : "var(--plot-light)",
-                        paper_bgcolor:"transparent"
+                    const trace = y.length > 0 ? {
+                        x, y,
+                        type: "scatter",
+                        mode: "lines+markers",
+                        marker: { size: 6, color: y.map(v => v < 0 ? "red" : "green") },
+                        line: { width: 3 }
+                    } : {
+                        x:[0,1], y:[0,0],
+                        type:"scatter", mode:"lines",
+                        line:{dash:"dot", width:2, color:"#6fa96f"}
                     };
 
-                    ultimoTrace = trace;
+                    const layout = {
+                        title: { text:"Umidade do Solo (%)", font:{size:18, color: escuro?"#fff":"#000"} },
+                        xaxis:{ visible: y.length>0, gridcolor: escuro?"#6f8f6f":"#c0d9c0" },
+                        yaxis:{ range:[0,100], gridcolor: escuro?"#6f8f6f":"#c0d9c0" },
+                        plot_bgcolor: escuro ? "var(--plot-dark)" : "var(--plot-bg)",
+                        paper_bgcolor: "transparent"
+                    };
+
                     ultimoLayout = layout;
 
-                    Plotly.react("grafico",[trace],layout,{responsive:true});
+                    Plotly.react("grafico", [trace], layout, { responsive:true });
+
+                    aplicarTemaNoGrafico();
                 });
         }
 
@@ -203,4 +219,3 @@
     </script>
 </body>
 </html>
-``
