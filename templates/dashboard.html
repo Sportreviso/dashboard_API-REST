@@ -159,13 +159,38 @@ function atualizarGrafico(){
     }
 }
 
-function exportarCSV(){
-    let csv="\uFEFFData;Umidade\n";
-    dadosX.forEach((x,i)=>csv+=`${x};${dadosY[i]}\n`);
-    const a=document.createElement("a");
-    a.href=URL.createObjectURL(new Blob([csv]));
-    a.download="umidade.csv";
-    a.click();
+function exportarCSV() {
+    let csv = "\uFEFFData;Último valor (%);Média (%);Umidade (%);Tempo\n";
+
+    if (dadosX.length === 0 || dadosY.length === 0) {
+        csv += "Sem dados;Sem dados;Sem dados;Sem dados;Sem dados\n";
+    } else {
+        const ultimoValor = dadosY[dadosY.length - 1];
+        const media =
+            dadosY.reduce((soma, v) => soma + v, 0) / dadosY.length;
+
+        for (let i = 0; i < dadosX.length; i++) {
+            const data = dadosX[i].split("T")[0];
+            const tempo = dadosX[i];
+            const umidade = dadosY[i];
+
+            csv +=
+                `${data};` +
+                `${ultimoValor.toFixed(1)};` +
+                `${media.toFixed(1)};` +
+                `${umidade.toFixed(1)};` +
+                `${tempo}\n`;
+        }
+    }
+
+    const blob = new Blob([csv], {
+        type: "text/csv;charset=utf-8;"
+    });
+
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "umidade_solo.csv";
+    link.click();
 }
 
 carregarDados();
