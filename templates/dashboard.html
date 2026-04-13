@@ -134,16 +134,31 @@
             document.body.classList.toggle("dark");
         }
 
-        function exportarCSV() {
-            if (dadosCSV.length === 0) return;
-            let csv = "Tempo,Umidade (%)\n";
-            dadosCSV.forEach(l => csv += `${l.x},${l.y}\n`);
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const a = document.createElement("a");
-            a.href = URL.createObjectURL(blob);
-            a.download = "umidade_solo.csv";
-            a.click();
-        }
+       function exportarCSV() {
+    let csv = "Data,Último valor (%),Média (%),Umidade (%),Tempo\n";
+
+    if (dadosCSV.length === 0) {
+        csv += "Sem dados,Sem dados,Sem dados,Sem dados,Sem dados\n";
+    } else {
+        const ultimoValor = dadosCSV[dadosCSV.length - 1].y;
+        const media =
+            dadosCSV.reduce((soma, item) => soma + item.y, 0) /
+            dadosCSV.length;
+
+        dadosCSV.forEach(item => {
+            // Extrai a data (YYYY-MM-DD) do timestamp
+            const data = item.x.split("T")[0];
+
+            csv += `${data},${ultimoValor.toFixed(1)},${media.toFixed(1)},${item.y.toFixed(1)},${item.x}\n`;
+        });
+    }
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "umidade_solo.csv";
+    link.click();
+}
 
         function calcularMedia(valores) {
             return valores.reduce((a, b) => a + b, 0) / valores.length;
