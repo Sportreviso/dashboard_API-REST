@@ -219,20 +219,41 @@
                         document.getElementById("media").innerText = "-- %";
                     }
 
-                    const layout = {
-                        title: "Umidade do Solo (%)",
-                        xaxis: {
-                            title: "Tempo",
-                            visible: y.length > 0
-                        },
-                        yaxis: {
-                            title: "Umidade (%)",
-                            range: [0, 100]
-                        },
-                        plot_bgcolor: "#d6f2d6",
-                        paper_bgcolor: "transparent",
-                        font: { size: 14 }
-                    };
+                    const temaEscuro = document.body.classList.contains("dark");
+
+const layout = {
+    title: {
+        text: "Umidade do Solo (%)",
+        font: {
+            color: temaEscuro ? "#ffffff" : "#000000",
+            size: 18
+        }
+    },
+    xaxis: {
+        title: {
+            text: "Tempo",
+            font: { color: temaEscuro ? "#ffffff" : "#000000" }
+        },
+        tickfont: { color: temaEscuro ? "#ffffff" : "#000000" },
+        gridcolor: temaEscuro ? "#666666" : "#cccccc",
+        visible: y.length > 0
+    },
+    yaxis: {
+        title: {
+            text: "Umidade (%)",
+            font: { color: temaEscuro ? "#ffffff" : "#000000" }
+        },
+        tickfont: { color: temaEscuro ? "#ffffff" : "#000000" },
+        range: [0, 100],
+        gridcolor: temaEscuro ? "#666666" : "#cccccc"
+    },
+    plot_bgcolor: temaEscuro ? "#2f4f2f" : "#d6f2d6",
+    paper_bgcolor: "transparent",
+    font: {
+        size: 14,
+        color: temaEscuro ? "#ffffff" : "#000000"
+    }
+};
 
                     Plotly.newPlot("grafico", [trace], layout);
                 });
