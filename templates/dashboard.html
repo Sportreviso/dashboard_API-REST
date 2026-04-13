@@ -38,18 +38,21 @@ button{padding:8px 14px;cursor:pointer}
     background:#edf7ed;
     padding:10px 18px;
     border-radius:8px;
+    color:#000000; /* força texto preto no tema claro */
 }
 
-body.dark .indicator{background:#1f2d1f}
-    
-    /* Cor dos números dentro dos cards */
-.indicator strong {
-    color: #000000; /* tema claro */
+body.dark .indicator{
+    background:#1f2d1f;
+    color:#ffffff !important; /* força texto branco no tema escuro */
 }
 
-/* Corrige cor no tema escuro */
-body.dark .indicator strong {
-    color: #ffffff;
+/* Força os números */
+.indicator strong{
+    color:#000000 !important;
+}
+
+body.dark .indicator strong{
+    color:#ffffff !important;
 }
 .chart-card{
     background:#edf7ed;
