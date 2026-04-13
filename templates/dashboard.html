@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Dashboard Umidade do Solo</title>
 
-    <!-- ✅ IMPORTAÇÃO CORRETA DO PLOTLY -->
+    <!-- Plotly -->
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
     <style>
@@ -12,6 +12,8 @@
             --bg-color: #ffffff;
             --text-color: #000000;
             --card-color: #eaf5ea;
+            --plot-light: #d6f2d6;
+            --plot-dark: #2f4f2f;
         }
 
         body.dark {
@@ -21,17 +23,17 @@
         }
 
         body {
-    background-color: var(--bg-color);
-    color: var(--text-color);
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 20px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
 
-    /* ✅ Animação suave de transição */
-    transition: 
-        background-color 0.4s ease,
-        color 0.4s ease;
-}
+            /* ✅ Transição suave */
+            transition:
+                background-color 0.4s ease,
+                color 0.4s ease;
+        }
 
         .header {
             text-align: center;
@@ -58,6 +60,10 @@
             margin: 4px;
             cursor: pointer;
             font-size: 14px;
+
+            transition:
+                background-color 0.3s ease,
+                color 0.3s ease;
         }
 
         .indicators {
@@ -75,6 +81,10 @@
             min-width: 150px;
             text-align: center;
             font-size: 14px;
+
+            transition:
+                background-color 0.4s ease,
+                color 0.4s ease;
         }
 
         .indicator strong {
@@ -92,6 +102,9 @@
             background-color: var(--card-color);
             padding: 15px;
             border-radius: 10px;
+
+            transition:
+                background-color 0.4s ease;
         }
     </style>
 </head>
@@ -113,15 +126,9 @@
 
     <!-- INDICADORES -->
     <div class="indicators">
-        <div class="indicator">
-            Último valor<br><strong id="ultimo">-- %</strong>
-        </div>
-        <div class="indicator">
-            Média<br><strong id="media">-- %</strong>
-        </div>
-        <div class="indicator">
-            Status<br><strong id="status">SEM DADOS</strong>
-        </div>
+        <div class="indicator">Último valor<br><strong id="ultimo">-- %</strong></div>
+        <div class="indicator">Média<br><strong id="media">-- %</strong></div>
+        <div class="indicator">Status<br><strong id="status">SEM DADOS</strong></div>
     </div>
 
     <!-- MENSAGEM -->
@@ -135,47 +142,35 @@
     <script>
         let dadosCSV = [];
 
-       function alternarTema() {
-    document.body.classList.toggle("dark");
+        function alternarTema() {
+            document.body.classList.toggle("dark");
+            carregarDados(); // ✅ Atualiza gráfico imediatamente
+        }
 
-    // 🔄 Atualiza o gráfico imediatamente após troca de tema
-    carregarDados();
-}
+        function exportarCSV() {
+            let csv = "\uFEFFData;Último valor (%);Média (%);Umidade (%);Tempo\n";
 
-       function exportarCSV() {
-    // BOM para Excel reconhecer UTF-8 corretamente
-    let csv = "\uFEFFData;Último valor (%);Média (%);Umidade (%);Tempo\n";
+            if (dadosCSV.length === 0) {
+                csv += "Sem dados;Sem dados;Sem dados;Sem dados;Sem dados\n";
+            } else {
+                const ultimo = dadosCSV[dadosCSV.length - 1].y;
+                const media = dadosCSV.reduce((s, i) => s + i.y, 0) / dadosCSV.length;
 
-    if (dadosCSV.length === 0) {
-        csv += "Sem dados;Sem dados;Sem dados;Sem dados;Sem dados\n";
-    } else {
-        const ultimoValor = dadosCSV[dadosCSV.length - 1].y;
-        const media =
-            dadosCSV.reduce((soma, item) => soma + item.y, 0) /
-            dadosCSV.length;
+                dadosCSV.forEach(item => {
+                    const data = item.x.split("T")[0];
+                    csv += `${data};${ultimo.toFixed(1)};${media.toFixed(1)};${item.y.toFixed(1)};${item.x}\n`;
+                });
+            }
 
-        dadosCSV.forEach(item => {
-            const data = item.x.split("T")[0];
-            csv += `${data};${ultimoValor.toFixed(1)};${media.toFixed(1)};${item.y.toFixed(1)};${item.x}\n`;
-        });
-    }
-
-    const blob = new Blob([csv], {
-        type: "text/csv;charset=utf-8;"
-    });
-
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = "umidade_solo.csv";
-    link.click();
-}
-
-        function calcularMedia(valores) {
-            return valores.reduce((a, b) => a + b, 0) / valores.length;
+            const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "umidade_solo.csv";
+            link.click();
         }
 
         function carregarDados() {
-            fetch('/data')
+            fetch("/data")
                 .then(r => r.json())
                 .then(d => {
                     const payload = JSON.parse(d[0]);
@@ -184,17 +179,16 @@
 
                     dadosCSV = x.map((v, i) => ({ x: v, y: y[i] }));
 
+                    const escuro = document.body.classList.contains("dark");
+
                     let trace;
 
                     if (y.length > 0) {
-                        // ✅ DADOS REAIS
                         trace = {
-                            x: x,
-                            y: y,
+                            x, y,
                             type: "scatter",
                             mode: "lines+markers",
-                            name: "Umidade do Solo",
-                            line: { width: 3, color: "green" },
+                            line: { width: 3 },
                             marker: {
                                 size: 6,
                                 color: y.map(v => v < 0 ? "red" : "green")
@@ -203,24 +197,16 @@
 
                         document.getElementById("mensagem").style.display = "none";
                         document.getElementById("status").innerText = "ONLINE";
-                        document.getElementById("ultimo").innerText =
-                            y[y.length - 1].toFixed(1) + " %";
+                        document.getElementById("ultimo").innerText = y.at(-1).toFixed(1) + " %";
                         document.getElementById("media").innerText =
-                            calcularMedia(y).toFixed(1) + " %";
-
+                            (y.reduce((a,b)=>a+b,0)/y.length).toFixed(1) + " %";
                     } else {
-                        // ✅ LINHA VISUAL QUANDO NÃO HÁ DADOS
                         trace = {
-                            x: [0, 1],
-                            y: [0, 0],
+                            x: [0,1],
+                            y: [0,0],
                             type: "scatter",
                             mode: "lines",
-                            name: "Aguardando dados",
-                            line: {
-                                width: 2,
-                                dash: "dot",
-                                color: "#6a9e6a"
-                            }
+                            line: { dash: "dot", width: 2, color: "#6a9e6a" }
                         };
 
                         document.getElementById("mensagem").style.display = "block";
@@ -229,43 +215,31 @@
                         document.getElementById("media").innerText = "-- %";
                     }
 
-                    const temaEscuro = document.body.classList.contains("dark");
+                    const layout = {
+                        title: {
+                            text: "Umidade do Solo (%)",
+                            font: { color: escuro ? "#fff" : "#000", size: 18 }
+                        },
+                        xaxis: {
+                            title: "Tempo",
+                            tickfont: { color: escuro ? "#fff" : "#000" },
+                            gridcolor: escuro ? "#666" : "#ccc",
+                            visible: y.length > 0
+                        },
+                        yaxis: {
+                            title: "Umidade (%)",
+                            tickfont: { color: escuro ? "#fff" : "#000" },
+                            gridcolor: escuro ? "#666" : "#ccc",
+                            range: [0,100]
+                        },
+                        plot_bgcolor: escuro ? "var(--plot-dark)" : "var(--plot-light)",
+                        paper_bgcolor: "transparent"
+                    };
 
-const layout = {
-    title: {
-        text: "Umidade do Solo (%)",
-        font: {
-            color: temaEscuro ? "#ffffff" : "#000000",
-            size: 18
-        }
-    },
-    xaxis: {
-        title: {
-            text: "Tempo",
-            font: { color: temaEscuro ? "#ffffff" : "#000000" }
-        },
-        tickfont: { color: temaEscuro ? "#ffffff" : "#000000" },
-        gridcolor: temaEscuro ? "#666666" : "#cccccc",
-        visible: y.length > 0
-    },
-    yaxis: {
-        title: {
-            text: "Umidade (%)",
-            font: { color: temaEscuro ? "#ffffff" : "#000000" }
-        },
-        tickfont: { color: temaEscuro ? "#ffffff" : "#000000" },
-        range: [0, 100],
-        gridcolor: temaEscuro ? "#666666" : "#cccccc"
-    },
-    plot_bgcolor: temaEscuro ? "#2f4f2f" : "#d6f2d6",
-    paper_bgcolor: "transparent",
-    font: {
-        size: 14,
-        color: temaEscuro ? "#ffffff" : "#000000"
-    }
-};
-
-                    Plotly.newPlot("grafico", [trace], layout);
+                    Plotly.react("grafico", [trace], layout, {
+                        transition: { duration: 400, easing: "cubic-in-out" },
+                        responsive: true
+                    });
                 });
         }
 
