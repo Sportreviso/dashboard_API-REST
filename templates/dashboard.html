@@ -41,7 +41,16 @@ button{padding:8px 14px;cursor:pointer}
 }
 
 body.dark .indicator{background:#1f2d1f}
+    
+    /* Cor dos números dentro dos cards */
+.indicator strong {
+    color: #000000; /* tema claro */
+}
 
+/* Corrige cor no tema escuro */
+body.dark .indicator strong {
+    color: #ffffff;
+}
 .chart-card{
     background:#edf7ed;
     padding:16px;
