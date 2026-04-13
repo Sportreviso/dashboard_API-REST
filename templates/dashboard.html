@@ -130,9 +130,12 @@
     <script>
         let dadosCSV = [];
 
-        function alternarTema() {
-            document.body.classList.toggle("dark");
-        }
+       function alternarTema() {
+    document.body.classList.toggle("dark");
+
+    // 🔄 Atualiza o gráfico imediatamente após troca de tema
+    carregarDados();
+}
 
        function exportarCSV() {
     // BOM para Excel reconhecer UTF-8 corretamente
