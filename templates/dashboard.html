@@ -28,47 +28,23 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 20px;
-
-            /* ✅ Transição suave */
-            transition:
-                background-color 0.4s ease,
-                color 0.4s ease;
+            transition: background-color 0.4s ease, color 0.4s ease;
         }
 
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
+        .header { text-align: center; margin-bottom: 20px; }
+        .header h3 { margin: 2px 0; font-size: 14px; font-weight: normal; }
 
-        .header h1 {
-            margin-bottom: 5px;
-        }
-
-        .header h3 {
-            margin: 2px 0;
-            font-weight: normal;
-            font-size: 14px;
-        }
-
-        .controls {
-            text-align: center;
-            margin-bottom: 15px;
-        }
-
+        .controls { text-align: center; margin-bottom: 15px; }
         button {
             padding: 8px 12px;
             margin: 4px;
             cursor: pointer;
             font-size: 14px;
-
-            transition:
-                background-color 0.3s ease,
-                color 0.3s ease;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         .indicators {
             display: flex;
-            flex-wrap: wrap;
             justify-content: center;
             gap: 15px;
             margin-bottom: 15px;
@@ -80,16 +56,10 @@
             border-radius: 8px;
             min-width: 150px;
             text-align: center;
-            font-size: 14px;
-
-            transition:
-                background-color 0.4s ease,
-                color 0.4s ease;
+            transition: background-color 0.4s ease, color 0.4s ease;
         }
 
-        .indicator strong {
-            font-size: 18px;
-        }
+        .indicator strong { font-size: 18px; }
 
         #mensagem {
             text-align: center;
@@ -102,15 +72,12 @@
             background-color: var(--card-color);
             padding: 15px;
             border-radius: 10px;
-
-            transition:
-                background-color 0.4s ease;
+            transition: background-color 0.4s ease;
         }
     </style>
 </head>
 
 <body>
-    <!-- CABEÇALHO -->
     <div class="header">
         <h1>DASHBOARD UMIDADE DO SOLO</h1>
         <h3><strong>TÍTULO:</strong> Coleta e Processamento de Dados na Automação de Irrigação de Área com Erosão</h3>
@@ -118,33 +85,43 @@
         <h3><strong>GRUPO:</strong> 15 – UNIVESP 2026</h3>
     </div>
 
-    <!-- CONTROLES -->
     <div class="controls">
         <button onclick="alternarTema()">Tema Claro / Escuro</button>
         <button onclick="exportarCSV()">Exportar CSV</button>
     </div>
 
-    <!-- INDICADORES -->
     <div class="indicators">
         <div class="indicator">Último valor<br><strong id="ultimo">-- %</strong></div>
         <div class="indicator">Média<br><strong id="media">-- %</strong></div>
         <div class="indicator">Status<br><strong id="status">SEM DADOS</strong></div>
     </div>
 
-    <!-- MENSAGEM -->
     <p id="mensagem">Aguardando dados do sensor…</p>
 
-    <!-- GRÁFICO -->
     <div class="chart-card">
         <div id="grafico"></div>
     </div>
 
     <script>
         let dadosCSV = [];
+        let ultimoTrace = null;
+        let ultimoLayout = null;
 
         function alternarTema() {
             document.body.classList.toggle("dark");
-            carregarDados(); // ✅ Atualiza gráfico imediatamente
+
+            if (!ultimoLayout) return;
+
+            const escuro = document.body.classList.contains("dark");
+
+            Plotly.relayout("grafico", {
+                "title.font.color": escuro ? "#fff" : "#000",
+                "xaxis.tickfont.color": escuro ? "#fff" : "#000",
+                "yaxis.tickfont.color": escuro ? "#fff" : "#000",
+                "xaxis.gridcolor": escuro ? "#666" : "#ccc",
+                "yaxis.gridcolor": escuro ? "#666" : "#ccc",
+                "plot_bgcolor": escuro ? "var(--plot-dark)" : "var(--plot-light)"
+            });
         }
 
         function exportarCSV() {
@@ -153,12 +130,11 @@
             if (dadosCSV.length === 0) {
                 csv += "Sem dados;Sem dados;Sem dados;Sem dados;Sem dados\n";
             } else {
-                const ultimo = dadosCSV[dadosCSV.length - 1].y;
+                const ultimo = dadosCSV.at(-1).y;
                 const media = dadosCSV.reduce((s, i) => s + i.y, 0) / dadosCSV.length;
 
-                dadosCSV.forEach(item => {
-                    const data = item.x.split("T")[0];
-                    csv += `${data};${ultimo.toFixed(1)};${media.toFixed(1)};${item.y.toFixed(1)};${item.x}\n`;
+                dadosCSV.forEach(i => {
+                    csv += `${i.x.split("T")[0]};${ultimo.toFixed(1)};${media.toFixed(1)};${i.y.toFixed(1)};${i.x}\n`;
                 });
             }
 
@@ -178,7 +154,6 @@
                     const y = payload.data[0].y;
 
                     dadosCSV = x.map((v, i) => ({ x: v, y: y[i] }));
-
                     const escuro = document.body.classList.contains("dark");
 
                     let trace;
@@ -189,12 +164,8 @@
                             type: "scatter",
                             mode: "lines+markers",
                             line: { width: 3 },
-                            marker: {
-                                size: 6,
-                                color: y.map(v => v < 0 ? "red" : "green")
-                            }
+                            marker: { size: 6, color: y.map(v => v < 0 ? "red" : "green") }
                         };
-
                         document.getElementById("mensagem").style.display = "none";
                         document.getElementById("status").innerText = "ONLINE";
                         document.getElementById("ultimo").innerText = y.at(-1).toFixed(1) + " %";
@@ -202,44 +173,28 @@
                             (y.reduce((a,b)=>a+b,0)/y.length).toFixed(1) + " %";
                     } else {
                         trace = {
-                            x: [0,1],
-                            y: [0,0],
-                            type: "scatter",
-                            mode: "lines",
-                            line: { dash: "dot", width: 2, color: "#6a9e6a" }
+                            x:[0,1], y:[0,0],
+                            type:"scatter", mode:"lines",
+                            line:{dash:"dot", width:2,color:"#6a9e6a"}
                         };
-
-                        document.getElementById("mensagem").style.display = "block";
-                        document.getElementById("status").innerText = "SEM DADOS";
-                        document.getElementById("ultimo").innerText = "-- %";
-                        document.getElementById("media").innerText = "-- %";
+                        document.getElementById("mensagem").style.display="block";
+                        document.getElementById("status").innerText="SEM DADOS";
+                        document.getElementById("ultimo").innerText="-- %";
+                        document.getElementById("media").innerText="-- %";
                     }
 
                     const layout = {
-                        title: {
-                            text: "Umidade do Solo (%)",
-                            font: { color: escuro ? "#fff" : "#000", size: 18 }
-                        },
-                        xaxis: {
-                            title: "Tempo",
-                            tickfont: { color: escuro ? "#fff" : "#000" },
-                            gridcolor: escuro ? "#666" : "#ccc",
-                            visible: y.length > 0
-                        },
-                        yaxis: {
-                            title: "Umidade (%)",
-                            tickfont: { color: escuro ? "#fff" : "#000" },
-                            gridcolor: escuro ? "#666" : "#ccc",
-                            range: [0,100]
-                        },
+                        title:{ text:"Umidade do Solo (%)", font:{color: escuro?"#fff":"#000", size:18}},
+                        xaxis:{ title:"Tempo", visible:y.length>0, tickfont:{color:escuro?"#fff":"#000"}, gridcolor:escuro?"#666":"#ccc"},
+                        yaxis:{ title:"Umidade (%)", range:[0,100], tickfont:{color:escuro?"#fff":"#000"}, gridcolor:escuro?"#666":"#ccc"},
                         plot_bgcolor: escuro ? "var(--plot-dark)" : "var(--plot-light)",
-                        paper_bgcolor: "transparent"
+                        paper_bgcolor:"transparent"
                     };
 
-                    Plotly.react("grafico", [trace], layout, {
-                        transition: { duration: 400, easing: "cubic-in-out" },
-                        responsive: true
-                    });
+                    ultimoTrace = trace;
+                    ultimoLayout = layout;
+
+                    Plotly.react("grafico",[trace],layout,{responsive:true});
                 });
         }
 
@@ -248,3 +203,4 @@
     </script>
 </body>
 </html>
+``
