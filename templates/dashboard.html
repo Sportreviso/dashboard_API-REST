@@ -24,7 +24,6 @@ body.dark {
 .header h3{font-size:14px;font-weight:normal;margin:3px}
 
 .controls{text-align:center;margin-bottom:15px}
-
 button{padding:8px 14px;cursor:pointer}
 
 .indicators{
@@ -38,22 +37,23 @@ button{padding:8px 14px;cursor:pointer}
     background:#edf7ed;
     padding:10px 18px;
     border-radius:8px;
-    color:#000000; /* força texto preto no tema claro */
+    color:#000;
 }
 
 body.dark .indicator{
     background:#1f2d1f;
-    color:#ffffff !important; /* força texto branco no tema escuro */
+    color:#fff;
 }
 
-/* Força os números */
 .indicator strong{
-    color:#000000 !important;
+    color:#000;
+    font-weight:bold;
 }
 
 body.dark .indicator strong{
-    color:#ffffff !important;
+    color:#fff;
 }
+
 .chart-card{
     background:#edf7ed;
     padding:16px;
@@ -98,22 +98,13 @@ body.dark .chart-card{background:#1f2d1f}
 </div>
 
 <script>
-let dadosCSV = [];
 let temaAtual = "claro";
 let dadosX = [];
 let dadosY = [];
 
 const CORES = {
-    claro:{
-        plot:"#dff3df",
-        grid:"#c0d9c0",
-        text:"#000"
-    },
-    escuro:{
-        plot:"#2e4a2e",
-        grid:"#6f8f6f",
-        text:"#fff"
-    }
+    claro:{ plot:"#dff3df", grid:"#c0d9c0", text:"#000" },
+    escuro:{ plot:"#2e4a2e", grid:"#6f8f6f", text:"#fff" }
 };
 
 function alternarTema(){
@@ -132,6 +123,12 @@ function atualizarLayout(){
         "yaxis.tickfont.color": c.text,
         "title.font.color": c.text
     });
+
+    // 🔒 garante cor correta nos cards também
+    const corTexto = c.text;
+    ["status","ultimo","media"].forEach(id=>{
+        document.getElementById(id).style.color = corTexto;
+    });
 }
 
 function carregarDados(){
@@ -149,8 +146,8 @@ function atualizarGrafico(){
     const c = CORES[temaAtual];
 
     const trace = dadosY.length ?
-        {x:dadosX,y:dadosY,mode:"lines+markers",line:{width:3}} :
-        {x:[0,1],y:[0,0],mode:"lines",line:{dash:"dot",width:2,color:"#6fa96f"}};
+        { x:dadosX, y:dadosY, mode:"lines+markers", line:{width:3} } :
+        { x:[0,1], y:[0,0], mode:"lines", line:{dash:"dot",width:2,color:"#6fa96f"} };
 
     Plotly.react("grafico",[trace],{
         title:{text:"Umidade do Solo (%)",font:{color:c.text}},
@@ -161,48 +158,40 @@ function atualizarGrafico(){
     });
 
     if(dadosY.length){
-        document.getElementById("status").innerText="ONLINE";
-        document.getElementById("ultimo").innerText=dadosY.at(-1)+" %";
-        document.getElementById("media").innerText=
+        const ultimo = dadosY.at(-1)+" %";
+        const media  =
             (dadosY.reduce((a,b)=>a+b,0)/dadosY.length).toFixed(1)+" %";
+
+        document.getElementById("status").innerText="ONLINE";
+        document.getElementById("ultimo").innerText=ultimo;
+        document.getElementById("media").innerText=media;
+
+        // 🔒 FORÇA COR APÓS innerText
+        document.getElementById("status").style.color=c.text;
+        document.getElementById("ultimo").style.color=c.text;
+        document.getElementById("media").style.color=c.text;
+
         document.getElementById("mensagem").style.display="none";
-    }else{
+    } else {
         document.getElementById("mensagem").style.display="block";
     }
 }
 
-function exportarCSV() {
-    let csv = "\uFEFFData;Último valor (%);Média (%);Umidade (%);Tempo\n";
-
-    if (dadosX.length === 0 || dadosY.length === 0) {
-        csv += "Sem dados;Sem dados;Sem dados;Sem dados;Sem dados\n";
-    } else {
-        const ultimoValor = dadosY[dadosY.length - 1];
-        const media =
-            dadosY.reduce((soma, v) => soma + v, 0) / dadosY.length;
-
-        for (let i = 0; i < dadosX.length; i++) {
-            const data = dadosX[i].split("T")[0];
-            const tempo = dadosX[i];
-            const umidade = dadosY[i];
-
-            csv +=
-                `${data};` +
-                `${ultimoValor.toFixed(1)};` +
-                `${media.toFixed(1)};` +
-                `${umidade.toFixed(1)};` +
-                `${tempo}\n`;
-        }
+function exportarCSV(){
+    let csv="\uFEFFData;Último valor;Média;Umidade;Tempo\n";
+    if(!dadosY.length){
+        csv+="Sem dados;Sem dados;Sem dados;Sem dados;Sem dados\n";
+    }else{
+        const ultimo=dadosY.at(-1);
+        const media=(dadosY.reduce((a,b)=>a+b,0)/dadosY.length).toFixed(1);
+        dadosX.forEach((t,i)=>{
+            csv+=`${t.split("T")[0]};${ultimo};${media};${dadosY[i]};${t}\n`;
+        });
     }
-
-    const blob = new Blob([csv], {
-        type: "text/csv;charset=utf-8;"
-    });
-
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = "umidade_solo.csv";
-    link.click();
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8;"}));
+    a.download="umidade_solo.csv";
+    a.click();
 }
 
 carregarDados();
