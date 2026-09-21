@@ -8,8 +8,8 @@ app = Flask(__name__)
 # CONFIGURAÇÃO THINGSPEAK
 # =====================================================
 
-CHANNEL_ID = "3272763"
-API_KEY = "5IIMKO2XDCJ9GT67"
+CHANNEL_ID = "3500867"
+API_KEY = "SD5VUIMFJUQ0VSLM"
 RESULTS = 200
 
 URL = (
