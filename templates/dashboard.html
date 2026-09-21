@@ -222,18 +222,19 @@ Tema Claro / Escuro
 
 <div class="indicators">
     <div class="indicator">
-        Último valor<br>
-        <strong id="ultimo_qualidade">-- %</strong>
-    </div>
+    Último valor<br>
+    <strong id="ultimo_qualidade">-- ppm</strong>
 
-    <div class="indicator">
-        Média<br>
-        <strong id="media_qualidade">-- %</strong>
-    </div>
+</div>
 
-    <div class="indicator">
-        Status<br>
-        <strong id="status_qualidade">OFFLINE</strong>
+<div class="indicator">
+    Média<br>
+    <strong id="media_qualidade">-- ppm</strong>
+</div>
+ 
+<div class="indicator">
+    Status<br>
+    <strong id="status_qualidade">OFFLINE</strong>
     </div>
 </div>
 
@@ -383,12 +384,12 @@ function carregarDados(){
 
         criarGrafico(
             "grafico_qualidade",
-            "Qualidade da Água (%)",
+            "TDS da Água (ppm)",
             d.tempo,
             d.qualidade_agua,
             0,
-            100
-        );
+            1000
+            );
 
         atualizarIndicadores(
             "solo",
@@ -417,7 +418,7 @@ function carregarDados(){
         atualizarIndicadores(
             "qualidade",
             d.qualidade_agua,
-            "%"
+           "ppm"
         );
 
         document.getElementById("mensagem")
