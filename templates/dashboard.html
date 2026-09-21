@@ -2,212 +2,348 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Dashboard Umidade do Solo</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard Ambiental</title>
 
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
 <style>
-body {
+
+body{
     background:#ffffff;
     color:#000;
-    font-family:Arial, sans-serif;
+    font-family:Arial,sans-serif;
     padding:20px;
-    transition:background .3s, color .3s;
+    transition:.3s;
 }
 
-body.dark {
-    background:#0f0f0f;
-    color:#fff;
+body.dark{
+    background:#121212;
+    color:#ffffff;
 }
 
-.header{text-align:center;margin-bottom:20px;}
-.header h3{font-size:14px;font-weight:normal;margin:3px}
+.header{
+    text-align:center;
+    margin-bottom:20px;
+}
 
-.controls{text-align:center;margin-bottom:15px}
+.controls{
+    text-align:center;
+    margin-bottom:15px;
+}
 
-button{padding:8px 14px;cursor:pointer}
+button{
+    padding:10px 15px;
+    cursor:pointer;
+    margin:5px;
+}
 
 .indicators{
     display:flex;
     justify-content:center;
+    flex-wrap:wrap;
     gap:15px;
-    margin-bottom:15px
+    margin-bottom:20px;
 }
 
 .indicator{
     background:#edf7ed;
-    padding:10px 18px;
-    border-radius:8px;
-    color:#000000; /* força texto preto no tema claro */
+    color:#000;
+    padding:12px 20px;
+    border-radius:10px;
+    text-align:center;
+    min-width:130px;
 }
 
 body.dark .indicator{
     background:#1f2d1f;
-    color:#ffffff !important; /* força texto branco no tema escuro */
+    color:#fff;
 }
 
-/* Força os números */
-.indicator strong{
-    color:#000000 !important;
-}
-
-body.dark .indicator strong{
-    color:#ffffff !important;
-}
 .chart-card{
     background:#edf7ed;
-    padding:16px;
+    padding:20px;
+    margin-bottom:20px;
     border-radius:12px;
 }
 
-body.dark .chart-card{background:#1f2d1f}
+body.dark .chart-card{
+    background:#1f2d1f;
+}
 
 #mensagem{
     text-align:center;
+    margin-bottom:15px;
     color:gray;
-    font-style:italic;
-    margin-bottom:10px
 }
+
 </style>
 </head>
 
 <body>
 
 <div class="header">
-<h1>DASHBOARD UMIDADE DO SOLO</h1>
-<h3><strong>TÍTULO:</strong> Coleta e Processamento de Dados na Automação de Irrigação de Área com Erosão</h3>
-<h3><strong>TURMA:</strong> DRP14-PJI510-A2026S1N1</h3>
-<h3><strong>GRUPO:</strong> 15 – UNIVESP 2026</h3>
+
+<h1>DASHBOARD AMBIENTAL</h1>
+
+<h3>
+<strong>TÍTULO:</strong>
+Coleta e Processamento de Dados na Automação de Irrigação de Área com Erosão
+</h3>
+
+<h3>
+<strong>TURMA:</strong>
+DRP14-PJI510-A2026S1N1
+</h3>
+
+<h3>
+<strong>GRUPO:</strong>
+15 – UNIVESP 2026
+</h3>
+
 </div>
 
 <div class="controls">
-<button onclick="alternarTema()">Tema Claro / Escuro</button>
-<button onclick="exportarCSV()">Exportar CSV</button>
+<button onclick="alternarTema()">
+Tema Claro / Escuro
+</button>
 </div>
 
 <div class="indicators">
-<div class="indicator">Último valor<br><strong id="ultimo">-- %</strong></div>
-<div class="indicator">Média<br><strong id="media">-- %</strong></div>
-<div class="indicator">Status<br><strong id="status">SEM DADOS</strong></div>
+
+<div class="indicator">
+Último valor<br>
+<strong id="ultimo">--</strong>
 </div>
 
-<p id="mensagem">Aguardando dados do sensor…</p>
+<div class="indicator">
+Média<br>
+<strong id="media">--</strong>
+</div>
+
+<div class="indicator">
+Status<br>
+<strong id="status">OFFLINE</strong>
+</div>
+
+</div>
+
+<p id="mensagem">
+Carregando dados...
+</p>
 
 <div class="chart-card">
-<div id="grafico"></div>
+<div id="grafico_solo"></div>
+</div>
+
+<div class="chart-card">
+<div id="grafico_umidade_ar"></div>
+</div>
+
+<div class="chart-card">
+<div id="grafico_temp_ar"></div>
+</div>
+
+<div class="chart-card">
+<div id="grafico_temp_agua"></div>
+</div>
+
+<div class="chart-card">
+<div id="grafico_qualidade"></div>
 </div>
 
 <script>
-let dadosCSV = [];
-let temaAtual = "claro";
-let dadosX = [];
-let dadosY = [];
 
-const CORES = {
+let temaAtual="claro";
+
+const CORES={
     claro:{
         plot:"#dff3df",
-        grid:"#c0d9c0",
+        grid:"#bad3ba",
         text:"#000"
     },
     escuro:{
         plot:"#2e4a2e",
-        grid:"#6f8f6f",
+        grid:"#688468",
         text:"#fff"
     }
 };
 
 function alternarTema(){
-    temaAtual = temaAtual === "claro" ? "escuro" : "claro";
+
+    temaAtual=
+        temaAtual==="claro"
+        ? "escuro"
+        : "claro";
+
     document.body.classList.toggle("dark");
-    atualizarLayout();
+
+    carregarDados();
 }
 
-function atualizarLayout(){
-    const c = CORES[temaAtual];
-    Plotly.relayout("grafico", {
-        plot_bgcolor: c.plot,
-        "xaxis.gridcolor": c.grid,
-        "yaxis.gridcolor": c.grid,
-        "xaxis.tickfont.color": c.text,
-        "yaxis.tickfont.color": c.text,
-        "title.font.color": c.text
-    });
+function criarGrafico(
+    id,
+    titulo,
+    x,
+    y,
+    minimo,
+    maximo
+){
+
+    const c=CORES[temaAtual];
+
+    Plotly.react(
+        id,
+        [{
+            x:x,
+            y:y,
+            mode:"lines+markers",
+            line:{
+                width:3
+            }
+        }],
+        {
+            title:{
+                text:titulo,
+                font:{
+                    color:c.text
+                }
+            },
+
+            xaxis:{
+                gridcolor:c.grid
+            },
+
+            yaxis:{
+                gridcolor:c.grid,
+                range:[minimo,maximo]
+            },
+
+            plot_bgcolor:c.plot,
+            paper_bgcolor:"transparent",
+            font:{
+                color:c.text
+            },
+
+            margin:{
+                t:50,
+                r:20,
+                l:50,
+                b:50
+            }
+        }
+    );
+
+}
+
+function media(array){
+
+    const numeros=array.filter(v=>v!==null);
+
+    if(numeros.length===0)
+        return 0;
+
+    return (
+        numeros.reduce((a,b)=>a+b,0)
+        /
+        numeros.length
+    ).toFixed(1);
+
 }
 
 function carregarDados(){
+
     fetch("/data")
     .then(r=>r.json())
     .then(d=>{
-        const g = JSON.parse(d[0]);
-        dadosX = g.data[0].x;
-        dadosY = g.data[0].y;
-        atualizarGrafico();
-    });
-}
 
-function atualizarGrafico(){
-    const c = CORES[temaAtual];
+        criarGrafico(
+            "grafico_solo",
+            "Umidade do Solo (%)",
+            d.tempo,
+            d.solo,
+            0,
+            100
+        );
 
-    const trace = dadosY.length ?
-        {x:dadosX,y:dadosY,mode:"lines+markers",line:{width:3}} :
-        {x:[0,1],y:[0,0],mode:"lines",line:{dash:"dot",width:2,color:"#6fa96f"}};
+        criarGrafico(
+            "grafico_umidade_ar",
+            "Umidade do Ar (%)",
+            d.tempo,
+            d.umidade_ar,
+            0,
+            100
+        );
 
-    Plotly.react("grafico",[trace],{
-        title:{text:"Umidade do Solo (%)",font:{color:c.text}},
-        xaxis:{gridcolor:c.grid,visible:dadosY.length>0},
-        yaxis:{gridcolor:c.grid,range:[0,100]},
-        plot_bgcolor:c.plot,
-        paper_bgcolor:"transparent"
-    });
+        criarGrafico(
+            "grafico_temp_ar",
+            "Temperatura do Ar (°C)",
+            d.tempo,
+            d.temp_ar,
+            0,
+            50
+        );
 
-    if(dadosY.length){
-        document.getElementById("status").innerText="ONLINE";
-        document.getElementById("ultimo").innerText=dadosY.at(-1)+" %";
-        document.getElementById("media").innerText=
-            (dadosY.reduce((a,b)=>a+b,0)/dadosY.length).toFixed(1)+" %";
-        document.getElementById("mensagem").style.display="none";
-    }else{
-        document.getElementById("mensagem").style.display="block";
-    }
-}
+        criarGrafico(
+            "grafico_temp_agua",
+            "Temperatura da Água (°C)",
+            d.tempo,
+            d.temp_agua,
+            0,
+            60
+        );
 
-function exportarCSV() {
-    let csv = "\uFEFFData;Último valor (%);Média (%);Umidade (%);Tempo\n";
+        criarGrafico(
+            "grafico_qualidade",
+            "Qualidade da Água (%)",
+            d.tempo,
+            d.qualidade_agua,
+            0,
+            100
+        );
 
-    if (dadosX.length === 0 || dadosY.length === 0) {
-        csv += "Sem dados;Sem dados;Sem dados;Sem dados;Sem dados\n";
-    } else {
-        const ultimoValor = dadosY[dadosY.length - 1];
-        const media =
-            dadosY.reduce((soma, v) => soma + v, 0) / dadosY.length;
+        let ultimoSolo =
+            d.solo.filter(v=>v!==null).pop();
 
-        for (let i = 0; i < dadosX.length; i++) {
-            const data = dadosX[i].split("T")[0];
-            const tempo = dadosX[i];
-            const umidade = dadosY[i];
+        if(ultimoSolo!==undefined){
 
-            csv +=
-                `${data};` +
-                `${ultimoValor.toFixed(1)};` +
-                `${media.toFixed(1)};` +
-                `${umidade.toFixed(1)};` +
-                `${tempo}\n`;
+            document.getElementById("status")
+                .innerText="ONLINE";
+
+            document.getElementById("ultimo")
+                .innerText=
+                ultimoSolo.toFixed(1)+" %";
+
+            document.getElementById("media")
+                .innerText=
+                media(d.solo)+" %";
+
+            document.getElementById("mensagem")
+                .style.display="none";
+
         }
-    }
 
-    const blob = new Blob([csv], {
-        type: "text/csv;charset=utf-8;"
+    })
+    .catch(err=>{
+
+        console.error(err);
+
+        document.getElementById("status")
+            .innerText="ERRO";
+
     });
 
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = "umidade_solo.csv";
-    link.click();
 }
 
 carregarDados();
-setInterval(carregarDados,10000);
+
+setInterval(
+    carregarDados,
+    10000
+);
+
 </script>
 
 </body>
 </html>
+``
