@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard Ambiental</title>
 
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
@@ -14,7 +14,7 @@ body{
     color:#000;
     font-family:Arial,sans-serif;
     padding:20px;
-    transition:.3s;
+    transition:background .3s,color .3s;
 }
 
 body.dark{
@@ -27,9 +27,14 @@ body.dark{
     margin-bottom:20px;
 }
 
+.header h3{
+    margin:3px;
+    font-weight:normal;
+}
+
 .controls{
     text-align:center;
-    margin-bottom:15px;
+    margin-bottom:20px;
 }
 
 button{
@@ -41,18 +46,23 @@ button{
 .indicators{
     display:flex;
     justify-content:center;
-    flex-wrap:wrap;
     gap:15px;
-    margin-bottom:20px;
+    margin-top:20px;
+    margin-bottom:15px;
+    flex-wrap:wrap;
 }
 
 .indicator{
     background:#edf7ed;
-    color:#000;
-    padding:12px 20px;
-    border-radius:10px;
+    padding:10px 18px;
+    border-radius:8px;
     text-align:center;
+    color:#000;
     min-width:130px;
+}
+
+.indicator strong{
+    color:#000;
 }
 
 body.dark .indicator{
@@ -60,11 +70,15 @@ body.dark .indicator{
     color:#fff;
 }
 
+body.dark .indicator strong{
+    color:#fff;
+}
+
 .chart-card{
     background:#edf7ed;
-    padding:20px;
-    margin-bottom:20px;
+    padding:16px;
     border-radius:12px;
+    margin-bottom:30px;
 }
 
 body.dark .chart-card{
@@ -73,8 +87,9 @@ body.dark .chart-card{
 
 #mensagem{
     text-align:center;
-    margin-bottom:15px;
     color:gray;
+    margin-bottom:10px;
+    font-style:italic;
 }
 
 </style>
@@ -88,17 +103,17 @@ body.dark .chart-card{
 
 <h3>
 <strong>TÍTULO:</strong>
-Fazenda Vertical Inteligente
+Coleta e Processamento de Dados na Automação de Irrigação de Área com Erosão
 </h3>
 
 <h3>
 <strong>TURMA:</strong>
-DRP14-001
+DRP14-PJI510-A2026S1N1
 </h3>
 
 <h3>
-<strong>UNIVESP:</strong>
-Projeto Integrador em Computação VI -2026
+<strong>GRUPO:</strong>
+15 – UNIVESP 2026
 </h3>
 
 </div>
@@ -109,70 +124,143 @@ Tema Claro / Escuro
 </button>
 </div>
 
+<p id="mensagem">Carregando dados...</p>
+
+<!-- ================= SOLO ================= -->
+
 <div class="indicators">
+    <div class="indicator">
+        Último valor<br>
+        <strong id="ultimo_solo">-- %</strong>
+    </div>
 
-<div class="indicator">
-Último valor<br>
-<strong id="ultimo">--</strong>
-</div>
+    <div class="indicator">
+        Média<br>
+        <strong id="media_solo">-- %</strong>
+    </div>
 
-<div class="indicator">
-Média<br>
-<strong id="media">--</strong>
-</div>
-
-<div class="indicator">
-Status<br>
-<strong id="status">OFFLINE</strong>
-</div>
-
-</div>
-
-<p id="mensagem">
-Carregando dados...
-</p>
-
-<div class="chart-card">
-<div id="grafico_solo"></div>
+    <div class="indicator">
+        Status<br>
+        <strong id="status_solo">OFFLINE</strong>
+    </div>
 </div>
 
 <div class="chart-card">
-<div id="grafico_umidade_ar"></div>
+    <div id="grafico_solo"></div>
+</div>
+
+<!-- ================= UMIDADE AR ================= -->
+
+<div class="indicators">
+    <div class="indicator">
+        Último valor<br>
+        <strong id="ultimo_umidade_ar">-- %</strong>
+    </div>
+
+    <div class="indicator">
+        Média<br>
+        <strong id="media_umidade_ar">-- %</strong>
+    </div>
+
+    <div class="indicator">
+        Status<br>
+        <strong id="status_umidade_ar">OFFLINE</strong>
+    </div>
 </div>
 
 <div class="chart-card">
-<div id="grafico_temp_ar"></div>
+    <div id="grafico_umidade_ar"></div>
+</div>
+
+<!-- ================= TEMPERATURA AR ================= -->
+
+<div class="indicators">
+    <div class="indicator">
+        Último valor<br>
+        <strong id="ultimo_temp_ar">-- °C</strong>
+    </div>
+
+    <div class="indicator">
+        Média<br>
+        <strong id="media_temp_ar">-- °C</strong>
+    </div>
+
+    <div class="indicator">
+        Status<br>
+        <strong id="status_temp_ar">OFFLINE</strong>
+    </div>
 </div>
 
 <div class="chart-card">
-<div id="grafico_temp_agua"></div>
+    <div id="grafico_temp_ar"></div>
+</div>
+
+<!-- ================= TEMPERATURA ÁGUA ================= -->
+
+<div class="indicators">
+    <div class="indicator">
+        Último valor<br>
+        <strong id="ultimo_temp_agua">-- °C</strong>
+    </div>
+
+    <div class="indicator">
+        Média<br>
+        <strong id="media_temp_agua">-- °C</strong>
+    </div>
+
+    <div class="indicator">
+        Status<br>
+        <strong id="status_temp_agua">OFFLINE</strong>
+    </div>
 </div>
 
 <div class="chart-card">
-<div id="grafico_qualidade"></div>
+    <div id="grafico_temp_agua"></div>
+</div>
+
+<!-- ================= QUALIDADE ÁGUA ================= -->
+
+<div class="indicators">
+    <div class="indicator">
+        Último valor<br>
+        <strong id="ultimo_qualidade">-- %</strong>
+    </div>
+
+    <div class="indicator">
+        Média<br>
+        <strong id="media_qualidade">-- %</strong>
+    </div>
+
+    <div class="indicator">
+        Status<br>
+        <strong id="status_qualidade">OFFLINE</strong>
+    </div>
+</div>
+
+<div class="chart-card">
+    <div id="grafico_qualidade"></div>
 </div>
 
 <script>
 
-let temaAtual="claro";
+let temaAtual = "claro";
 
-const CORES={
+const CORES = {
     claro:{
         plot:"#dff3df",
-        grid:"#bad3ba",
+        grid:"#c0d9c0",
         text:"#000"
     },
     escuro:{
         plot:"#2e4a2e",
-        grid:"#688468",
+        grid:"#6f8f6f",
         text:"#fff"
     }
 };
 
 function alternarTema(){
 
-    temaAtual=
-        temaAtual==="claro"
+    temaAtual = temaAtual === "claro"
         ? "escuro"
         : "claro";
 
@@ -181,81 +269,81 @@ function alternarTema(){
     carregarDados();
 }
 
-function criarGrafico(
-    id,
-    titulo,
-    x,
-    y,
-    minimo,
-    maximo
-){
+function criarGrafico(id,titulo,x,y,min,max){
 
-    const c=CORES[temaAtual];
+    const c = CORES[temaAtual];
 
-    Plotly.react(
-        id,
-        [{
-            x:x,
-            y:y,
-            mode:"lines+markers",
-            line:{
-                width:3
-            }
-        }],
-        {
-            title:{
-                text:titulo,
-                font:{
-                    color:c.text
-                }
-            },
+    Plotly.react(id,[{
+        x:x,
+        y:y,
+        mode:"lines+markers",
+        line:{width:3}
+    }],
+    {
+        title:{
+            text:titulo,
+            font:{color:c.text}
+        },
 
-            xaxis:{
-                gridcolor:c.grid
-            },
+        xaxis:{
+            gridcolor:c.grid
+        },
 
-            yaxis:{
-                gridcolor:c.grid,
-                range:[minimo,maximo]
-            },
+        yaxis:{
+            gridcolor:c.grid,
+            range:[min,max]
+        },
 
-            plot_bgcolor:c.plot,
-            paper_bgcolor:"transparent",
-            font:{
-                color:c.text
-            },
+        plot_bgcolor:c.plot,
+        paper_bgcolor:"transparent",
 
-            margin:{
-                t:50,
-                r:20,
-                l:50,
-                b:50
-            }
+        font:{
+            color:c.text
         }
-    );
+    });
 
 }
 
-function media(array){
+function atualizarIndicadores(prefixo,dados,unidade){
 
-    const numeros=array.filter(v=>v!==null);
+    const valores = dados.filter(v => v !== null);
 
-    if(numeros.length===0)
-        return 0;
+    if(valores.length === 0){
 
-    return (
-        numeros.reduce((a,b)=>a+b,0)
+        document.getElementById("status_" + prefixo)
+            .innerText = "SEM DADOS";
+
+        return;
+    }
+
+    const ultimo = valores[valores.length-1];
+
+    const media =
+        valores.reduce((a,b)=>a+b,0)
         /
-        numeros.length
-    ).toFixed(1);
+        valores.length;
 
+    document.getElementById(
+        "ultimo_" + prefixo
+    ).innerText =
+        ultimo.toFixed(1) + " " + unidade;
+
+    document.getElementById(
+        "media_" + prefixo
+    ).innerText =
+        media.toFixed(1) + " " + unidade;
+
+    document.getElementById(
+        "status_" + prefixo
+    ).innerText =
+        "ONLINE";
 }
 
 function carregarDados(){
 
     fetch("/data")
-    .then(r=>r.json())
-    .then(d=>{
+    .then(r => r.json())
+    .then(d => {
 
         criarGrafico(
             "grafico_solo",
@@ -302,37 +390,47 @@ function carregarDados(){
             100
         );
 
-        let ultimoSolo =
-            d.solo.filter(v=>v!==null).pop();
+        atualizarIndicadores(
+            "solo",
+            d.solo,
+            "%"
+        );
 
-        if(ultimoSolo!==undefined){
+        atualizarIndicadores(
+            "umidade_ar",
+            d.umidade_ar,
+            "%"
+        );
 
-            document.getElementById("status")
-                .innerText="ONLINE";
+        atualizarIndicadores(
+            "temp_ar",
+            d.temp_ar,
+            "°C"
+        );
 
-            document.getElementById("ultimo")
-                .innerText=
-                ultimoSolo.toFixed(1)+" %";
+        atualizarIndicadores(
+            "temp_agua",
+            d.temp_agua,
+            "°C"
+        );
 
-            document.getElementById("media")
-                .innerText=
-                media(d.solo)+" %";
+        atualizarIndicadores(
+            "qualidade",
+            d.qualidade_agua,
+            "%"
+        );
 
-            document.getElementById("mensagem")
-                .style.display="none";
-
-        }
-
+        document.getElementById("mensagem")
+            .style.display = "none";
     })
-    .catch(err=>{
+    .catch(err => {
 
         console.error(err);
 
-        document.getElementById("status")
-            .innerText="ERRO";
-
+        document.getElementById("mensagem")
+            .innerText =
+            "Erro ao carregar dados";
     });
-
 }
 
 carregarDados();
@@ -346,4 +444,3 @@ setInterval(
 
 </body>
 </html>
-``
