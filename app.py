@@ -8,8 +8,8 @@ app = Flask(__name__)
 # CONFIGURAÇÃO THINGSPEAK
 # =====================================================
 
-CHANNEL_ID = "3500867"
-API_KEY = "SD5VUIMFJUQ0VSLM"
+CHANNEL_ID = "3272763"
+API_KEY = "5IIMKO2XDCJ9GT67"
 RESULTS = 200
 
 URL = (
@@ -23,12 +23,11 @@ URL = (
 # CAMPOS THINGSPEAK
 # =====================================================
 
-FIELD_UMIDADE_AR = "field1"
-FIELD_TEMP_AR = "field2"
-FIELD_TEMP_AGUA = "field3"
-FIELD_QUALIDADE_AGUA = "field4"
-FIELD_SOLO = "field5"
-`
+FIELD_SOLO = "field1"
+FIELD_UMIDADE_AR = "field2"
+FIELD_TEMP_AR = "field3"
+FIELD_TEMP_AGUA = "field4"
+FIELD_QUALIDADE_AGUA = "field5"
 
 # =====================================================
 # ROTA PRINCIPAL
