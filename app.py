@@ -23,11 +23,12 @@ URL = (
 # CAMPOS THINGSPEAK
 # =====================================================
 
-FIELD_SOLO = "field1"
-FIELD_UMIDADE_AR = "field2"
-FIELD_TEMP_AR = "field3"
-FIELD_TEMP_AGUA = "field4"
-FIELD_QUALIDADE_AGUA = "field5"
+FIELD_UMIDADE_AR = "field1"
+FIELD_TEMP_AR = "field2"
+FIELD_TEMP_AGUA = "field3"
+FIELD_QUALIDADE_AGUA = "field4"
+FIELD_SOLO = "field5"
+`
 
 # =====================================================
 # ROTA PRINCIPAL
