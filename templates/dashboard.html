@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard Ambiental</title>
+<title>Dashboard Web/title>
 
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
@@ -99,11 +99,11 @@ body.dark .chart-card{
 
 <div class="header">
 
-<h1>DASHBOARD AMBIENTAL</h1>
+<h1>DASHBOARD WEB>
 
 <h3>
 <strong>TÍTULO:</strong>
-Coleta e Processamento de Dados na Automação de Irrigação de Área com Erosão
+Horta Vertical
 </h3>
 
 <h3>
@@ -223,12 +223,12 @@ Tema Claro / Escuro
 <div class="indicators">
     <div class="indicator">
         Último valor<br>
-        <strong id="ultimo_qualidade">-- %</strong>
+       <strong id="ultimo_qualidade">-- ppm</strong>
     </div>
 
     <div class="indicator">
         Média<br>
-        <strong id="media_qualidade">-- %</strong>
+        <strong id="media_qualidade">-- ppm</strong>
     </div>
 
     <div class="indicator">
@@ -383,11 +383,11 @@ function carregarDados(){
 
         criarGrafico(
             "grafico_qualidade",
-            "Qualidade da Água (%)",
+            "TDS da Água (ppm) Sólidos Totais Dissolvidos (TDS), expressos em partes por milhão (ppm)",
             d.tempo,
             d.qualidade_agua,
             0,
-            100
+            1000
         );
 
         atualizarIndicadores(
@@ -417,8 +417,8 @@ function carregarDados(){
         atualizarIndicadores(
             "qualidade",
             d.qualidade_agua,
-            "%"
-        );
+            "ppm"
+);
 
         document.getElementById("mensagem")
             .style.display = "none";
