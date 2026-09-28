@@ -125,6 +125,29 @@ Tema Claro / Escuro
 </div>
 
 <p id="mensagem">Carregando dados...</p>
+    
+<!-- ================= SOLO ================= -->
+
+<div class="indicators">
+    <div class="indicator">
+        Último valor<br>
+        <strong id="ultimo_solo">-- %</strong>
+    </div>
+
+    <div class="indicator">
+        Média<br>
+        <strong id="media_solo">-- %</strong>
+    </div>
+
+    <div class="indicator">
+        Status<br>
+        <strong id="status_solo">OFFLINE</strong>
+    </div>
+</div>
+
+<div class="chart-card">
+    <div id="grafico_solo"></div>
+</div>
 
 <!-- ================= UMIDADE AR ================= -->
 
@@ -218,30 +241,7 @@ Tema Claro / Escuro
 <div class="chart-card">
     <div id="grafico_qualidade"></div>
 </div>
-    
-<!-- ================= SOLO ================= -->
-
-<div class="indicators">
-    <div class="indicator">
-        Último valor<br>
-        <strong id="ultimo_solo">-- %</strong>
-    </div>
-
-    <div class="indicator">
-        Média<br>
-        <strong id="media_solo">-- %</strong>
-    </div>
-
-    <div class="indicator">
-        Status<br>
-        <strong id="status_solo">OFFLINE</strong>
-    </div>
-</div>
-
-<div class="chart-card">
-    <div id="grafico_solo"></div>
-</div>
-<script>
+    <script>
 
 let temaAtual = "claro";
 
