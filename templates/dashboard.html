@@ -41,6 +41,15 @@ button{
     padding:10px 15px;
     cursor:pointer;
     margin:5px;
+    background:#ff7a00;
+    color:white;
+    border:none;
+    border-radius:8px;
+    font-weight:bold;
+}
+
+button:hover{
+    background:#e66d00;
 }
 
 .indicators{
@@ -53,36 +62,31 @@ button{
 }
 
 .indicator{
-    background:#edf7ed;
-    padding:10px 18px;
-    border-radius:8px;
-    text-align:center;
-    color:#000;
-    min-width:130px;
+background:#fff0e0;
+padding:10px 18px;
+border-radius:8px;
+text-align:center;
+color:#000;
+min-width:130px;
+border:1px solid #ffd2a8;
 }
-
-.indicator strong{
-    color:#000;
-}
-
+ 
 body.dark .indicator{
-    background:#1f2d1f;
-    color:#fff;
+background:#4a2d1a;
+color:#fff;
 }
-
-body.dark .indicator strong{
-    color:#fff;
-}
-
+ 
 .chart-card{
-    background:#edf7ed;
-    padding:16px;
-    border-radius:12px;
-    margin-bottom:30px;
+background:#fff0e0;
+padding:16px;
+border-radius:12px;
+margin-bottom:30px;
+border:1px solid #ffd2a8;
 }
-
+ 
 body.dark .chart-card{
-    background:#1f2d1f;
+background:#4a2d1a;
+border:1px solid #8c6240;
 }
 
 #mensagem{
@@ -247,13 +251,13 @@ let temaAtual = "claro";
 
 const CORES = {
     claro:{
-        plot:"#dff3df",
-        grid:"#c0d9c0",
+        plot:"#fff0e0",
+        grid:"#d8b08c",
         text:"#000"
     },
     escuro:{
-        plot:"#2e4a2e",
-        grid:"#6f8f6f",
+        plot:"#4a2d1a",
+        grid:"#8c6240",
         text:"#fff"
     }
 };
@@ -273,12 +277,21 @@ function criarGrafico(id,titulo,x,y,min,max){
 
     const c = CORES[temaAtual];
 
-    Plotly.react(id,[{
-        x:x,
-        y:y,
-        mode:"lines+markers",
-        line:{width:3}
-    }],
+   Plotly.react(id,[{
+    x:x,
+    y:y,
+    mode:"lines+markers",
+
+    line:{
+        width:3,
+        color:"#ff7a00"
+    },
+
+    marker:{
+        color:"#ff7a00",
+        size:8
+    }
+}],
     {
         title:{
             text:titulo,
