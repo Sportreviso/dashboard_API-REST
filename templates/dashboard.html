@@ -251,6 +251,52 @@ Exportar CSV
 
 <script>
 
+function exportarCSV() {
+
+    fetch("/data")
+    .then(r => r.json())
+    .then(d => {
+
+        let csv =
+            "DataHora,UmidadeSolo,UmidadeAr,TemperaturaAr,TemperaturaAgua,TDS\n";
+
+        for(let i = 0; i < d.tempo.length; i++){
+
+            csv +=
+                `${d.tempo[i]},` +
+                `${d.solo[i] ?? ""},` +
+                `${d.umidade_ar[i] ?? ""},` +
+                `${d.temp_ar[i] ?? ""},` +
+                `${d.temp_agua[i] ?? ""},` +
+                `${d.qualidade_agua[i] ?? ""}\n`;
+        }
+
+        const blob = new Blob(
+            [csv],
+            { type: "text/csv;charset=utf-8;" }
+        );
+
+        const link = document.createElement("a");
+
+        link.href = URL.createObjectURL(blob);
+
+        link.download =
+            "horta_vertical_inteligente.csv";
+
+        document.body.appendChild(link);
+
+        link.click();
+
+        document.body.removeChild(link);
+    })
+    .catch(err => {
+
+        console.error(err);
+
+        alert("Erro ao exportar CSV.");
+    });
+}
+    
 let temaAtual = "claro";
 
 const CORES = {
