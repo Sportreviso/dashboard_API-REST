@@ -258,21 +258,21 @@ function exportarCSV() {
     .then(d => {
 
         let csv =
-            "DataHora,UmidadeSolo,UmidadeAr,TemperaturaAr,TemperaturaAgua,TDS\n";
+            "DataHora;UmidadeSolo;UmidadeAr;TemperaturaAr;TemperaturaAgua;TDS\n";
 
         for(let i = 0; i < d.tempo.length; i++){
 
             csv +=
-                `${d.tempo[i]},` +
-                `${d.solo[i] ?? ""},` +
-                `${d.umidade_ar[i] ?? ""},` +
-                `${d.temp_ar[i] ?? ""},` +
-                `${d.temp_agua[i] ?? ""},` +
+                `${d.tempo[i]};` +
+                `${d.solo[i] ?? ""};` +
+                `${d.umidade_ar[i] ?? ""};` +
+                `${d.temp_ar[i] ?? ""};` +
+                `${d.temp_agua[i] ?? ""};` +
                 `${d.qualidade_agua[i] ?? ""}\n`;
         }
 
         const blob = new Blob(
-            [csv],
+            ["\uFEFF" + csv],
             { type: "text/csv;charset=utf-8;" }
         );
 
